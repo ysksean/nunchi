@@ -24,7 +24,7 @@ claude-pet은 `UserPromptSubmit` 훅으로 받은 프롬프트의 어조를 분�
 ## 아키텍처
 
 ```
-Claude Code hooks ─→ bin/hook.js ─→ ~/.claude-pet/state.json ─→ Electron 오버레이
+Claude Code hooks ─→ bin/hook.js ─→ ~/.claude-pet-mood/state.json ─→ Electron 오버레이
    (UserPromptSubmit,   (말투 분류,      (감정 + 작업 상태만,      (투명·항상 위,
     PreToolUse, Stop…)    상태 기록)       프롬프트 원문 없음)       SVG 표정 렌더)
 ```

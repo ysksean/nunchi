@@ -6,7 +6,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const STATE_DIR = path.join(os.homedir(), '.claude-pet');
+// Note: ~/.claude-pet is taken by IMMINJU/claude-pet's installer — keep a distinct dir.
+const STATE_DIR = path.join(os.homedir(), '.claude-pet-mood');
 const STATE_FILE = path.join(STATE_DIR, 'state.json');
 
 const DEFAULT_STATE = {
