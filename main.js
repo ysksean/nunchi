@@ -46,6 +46,9 @@ function createWindow() {
 }
 
 ipcMain.on('pet:quit', () => app.quit());
+ipcMain.on('pet:move', (_e, x, y) => {
+  if (win && !win.isDestroyed()) win.setPosition(x, y);
+});
 
 app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide();

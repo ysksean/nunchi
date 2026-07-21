@@ -15,7 +15,6 @@
     position: relative;
     width: 180px;
     height: 210px;
-    -webkit-app-region: drag;
   }
   #bubble {
     position: absolute;
@@ -33,13 +32,51 @@
     transition: opacity 0.25s;
   }
   #bubble.show { opacity: 1; }
-  #pet {
+  #petwrap {
     position: absolute;
     bottom: 10px;
     left: 50%;
     margin-left: -70px;
     width: 140px;
     height: 150px;
+    transform-origin: 50% 100%;
+    cursor: grab;
+  }
+  #pet { display: block; width: 100%; height: 100%; }
+
+  /* touch physics: press-squish, release-jelly, hover-graze */
+  #petwrap.held {
+    cursor: grabbing;
+    transform: scale(1.07, 0.88);
+    transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #petwrap.boing { animation: jelly 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+  .cheek { transform-box: fill-box; transform-origin: center; }
+  #petwrap.held  .cheek { transform: scale(1.35, 0.7); transition: transform 0.1s; }
+  #petwrap.boing .cheek { animation: cheekJiggle 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+  #petwrap.graze .cheek { animation: cheekGraze 0.45s ease-out; }
+
+  @keyframes jelly {
+    0%   { transform: scale(1.07, 0.88); }
+    30%  { transform: scale(0.94, 1.08); }
+    55%  { transform: scale(1.04, 0.96); }
+    75%  { transform: scale(0.98, 1.02); }
+    100% { transform: scale(1, 1); }
+  }
+  @keyframes cheekJiggle {
+    0%   { transform: translate(0, 2px) scale(1.35, 0.7); }
+    20%  { transform: translate(-2.5px, -2px) scale(0.8, 1.3); }
+    40%  { transform: translate(2px, 1.5px) scale(1.22, 0.82); }
+    60%  { transform: translate(-1.5px, -1px) scale(0.9, 1.12); }
+    80%  { transform: translate(1px, 0.5px) scale(1.06, 0.95); }
+    100% { transform: none; }
+  }
+  @keyframes cheekGraze {
+    0%   { transform: translateY(0) scale(1); }
+    35%  { transform: translateY(1.5px) scale(1.15, 0.85); }
+    70%  { transform: translateY(-1px) scale(0.93, 1.08); }
+    100% { transform: none; }
   }
   #quit {
     position: absolute;
@@ -56,7 +93,6 @@
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s;
-    -webkit-app-region: no-drag;
   }
   #stage:hover #quit { opacity: 1; }
 
@@ -83,26 +119,28 @@
 <div id="stage">
   <div id="bubble"></div>
   <div id="quit" title="종료">×</div>
-  <svg id="pet" viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg">
-    <!-- body -->
-    <g id="body">
-      <rect x="10" y="20" width="120" height="115" rx="42" fill="#D97757" />
-      <rect x="10" y="20" width="120" height="115" rx="42" fill="#fff" opacity="0.07" />
-      <!-- feet -->
-      <ellipse cx="45" cy="138" rx="16" ry="9" fill="#C9664A" />
-      <ellipse cx="95" cy="138" rx="16" ry="9" fill="#C9664A" />
-    </g>
-    <g id="face"></g>
-    <g id="extras"></g>
-  </svg>
+  <div id="petwrap">
+    <svg id="pet" viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg">
+      <!-- body -->
+      <g id="body">
+        <rect x="10" y="20" width="120" height="115" rx="42" fill="#D97757" />
+        <rect x="10" y="20" width="120" height="115" rx="42" fill="#fff" opacity="0.07" />
+        <!-- feet -->
+        <ellipse cx="45" cy="138" rx="16" ry="9" fill="#C9664A" />
+        <ellipse cx="95" cy="138" rx="16" ry="9" fill="#C9664A" />
+      </g>
+      <g id="face"></g>
+      <g id="extras"></g>
+    </svg>
+  </div>
 </div>
 
 <script>
   const EYE = (cx, cy, r = 5.5) =>
     `<circle class="eye" cx="${cx}" cy="${cy}" r="${r}" fill="#2d2418"/>`;
   const CHEEKS = (color = '#F2A98C', op = 0.8) =>
-    `<ellipse cx="34" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>
-     <ellipse cx="106" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>`;
+    `<ellipse class="cheek" cx="34" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>
+     <ellipse class="cheek" cx="106" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>`;
 
   const FACES = {
     neutral: {
@@ -163,6 +201,15 @@
              ${CHEEKS()}`,
       anim: 'anim-bounce', bubble: '확인 필요해요! 🙋',
     },
+    poked: {
+      face: `<path d="M40 61 l12 7 -12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="M100 61 l-12 7 12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <ellipse cx="70" cy="93" rx="6" ry="7.5" fill="#2d2418"/>
+             <ellipse cx="70" cy="95.5" rx="3.5" ry="3.5" fill="#E8886B"/>
+             <ellipse class="cheek" cx="34" cy="82" rx="11" ry="6.5" fill="#F2A98C"/>
+             <ellipse class="cheek" cx="106" cy="82" rx="11" ry="6.5" fill="#F2A98C"/>`,
+      anim: 'anim-idle', bubble: '앗!?',
+    },
     sleeping: {
       face: `<path d="M42 68 Q48 72 54 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
              <path d="M86 68 Q92 72 98 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -205,9 +252,63 @@
     setFace(FACES[state.claudeState] ? state.claudeState : 'neutral');
   }
 
-  if (window.pet) {
-    window.pet.onState((s) => { state = s; resolve(); });
-    document.getElementById('quit').addEventListener('click', () => window.pet.quit());
+  // In a plain browser <svg id="pet"> shadows window.pet (named element access),
+  // so check for the actual preload API rather than mere existence.
+  const api = window.pet && typeof window.pet.onState === 'function' ? window.pet : null;
+  if (api) {
+    api.onState((s) => { state = s; resolve(); });
+    document.getElementById('quit').addEventListener('click', () => api.quit());
+  }
+
+  // ── Touch: press to squish, release to jelly-bounce, drag to move the window ──
+  const POKE_LINES = ['앗!?', '꺄악 깜짝이야', '히히 간지러워요', '왜 찔러요 ㅠㅠ', '말랑말랑하죠'];
+  const wrapEl = document.getElementById('petwrap');
+  const DRAG_THRESHOLD = 6; // px of screen movement before a press becomes a window drag
+  let pokeTimer = null;
+  let held = false, dragged = false, startX = 0, startY = 0, grabX = 0, grabY = 0;
+
+  petEl.addEventListener('pointerdown', (e) => {
+    held = true;
+    dragged = false;
+    startX = e.screenX; startY = e.screenY;
+    grabX = e.clientX;  grabY = e.clientY;
+    wrapEl.classList.remove('boing', 'graze');
+    void wrapEl.offsetWidth; // restart animations if re-pressed mid-bounce
+    wrapEl.classList.add('held');
+    petEl.setPointerCapture(e.pointerId);
+  });
+
+  petEl.addEventListener('pointermove', (e) => {
+    if (!held) return;
+    if (!dragged && Math.hypot(e.screenX - startX, e.screenY - startY) > DRAG_THRESHOLD) dragged = true;
+    if (dragged && api && api.move) {
+      api.move(Math.round(e.screenX - grabX), Math.round(e.screenY - grabY));
+    }
+  });
+
+  const release = () => {
+    if (!held) return;
+    held = false;
+    wrapEl.classList.remove('held');
+    wrapEl.classList.add('boing');
+    setTimeout(() => wrapEl.classList.remove('boing'), 700);
+    if (!dragged) poke();
+  };
+  petEl.addEventListener('pointerup', release);
+  petEl.addEventListener('pointercancel', release);
+
+  petEl.addEventListener('pointerenter', () => {
+    if (held || wrapEl.classList.contains('boing')) return;
+    wrapEl.classList.add('graze');
+    setTimeout(() => wrapEl.classList.remove('graze'), 500);
+  });
+
+  function poke() {
+    FACES.poked.bubble = POKE_LINES[Math.floor(Math.random() * POKE_LINES.length)];
+    current = null; // force re-render even when poked twice in a row
+    setFace('poked');
+    clearTimeout(pokeTimer);
+    pokeTimer = setTimeout(() => { current = null; resolve(); }, 1400);
   }
 
   // Dev aid: number keys cycle expressions when the window is focused.
