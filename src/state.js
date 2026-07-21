@@ -1,13 +1,12 @@
 'use strict';
 
-/** Shared read/write helpers for the runtime state file (~/.claude-pet/state.json). */
+/** Shared read/write helpers for the runtime state file (~/.nunchi/state.json). */
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-// Note: ~/.claude-pet is taken by IMMINJU/claude-pet's installer — keep a distinct dir.
-const STATE_DIR = path.join(os.homedir(), '.claude-pet-mood');
+const STATE_DIR = path.join(os.homedir(), '.nunchi');
 const STATE_FILE = path.join(STATE_DIR, 'state.json');
 
 const DEFAULT_STATE = {

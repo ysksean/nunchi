@@ -2,9 +2,9 @@
 'use strict';
 
 /**
- * Register (or remove, with --uninstall) claude-pet hooks in ~/.claude/settings.json.
+ * Register (or remove, with --uninstall) nunchi hooks in ~/.claude/settings.json.
  * Backs up the settings file before writing. Only touches entries whose command
- * contains the CLAUDE_PET_MARK marker, so other hooks are never modified.
+ * contains the NUNCHI_MARK marker, so other hooks are never modified.
  */
 
 const fs = require('fs');
@@ -13,7 +13,9 @@ const path = require('path');
 
 const SETTINGS = path.join(os.homedir(), '.claude', 'settings.json');
 const HOOK_SCRIPT = path.join(__dirname, '..', 'bin', 'hook.js');
-const CLAUDE_PET_MARK = 'claude-pet/bin/hook.js';
+// Path-independent marker: appended as an (ignored) CLI flag so install/uninstall
+// still match our entries even if the repo directory is moved or renamed.
+const NUNCHI_MARK = '--nunchi-hook';
 const EVENTS = [
   'UserPromptSubmit',
   'PreToolUse',
@@ -36,7 +38,9 @@ if (fs.existsSync(SETTINGS)) {
 
 settings.hooks = settings.hooks || {};
 
-const isOurs = (h) => typeof h.command === 'string' && h.command.includes(CLAUDE_PET_MARK);
+const isOurs = (h) =>
+  typeof h.command === 'string' &&
+  (h.command.includes(NUNCHI_MARK) || h.command.includes('claude-pet/bin/hook.js'));
 
 for (const event of EVENTS) {
   let matchers = settings.hooks[event] || [];
@@ -47,7 +51,7 @@ for (const event of EVENTS) {
     .filter((m) => m.hooks.length > 0);
 
   if (!uninstall) {
-    matchers.push({ hooks: [{ type: 'command', command: `node "${HOOK_SCRIPT}"` }] });
+    matchers.push({ hooks: [{ type: 'command', command: `node "${HOOK_SCRIPT}" ${NUNCHI_MARK}` }] });
   }
 
   if (matchers.length > 0) settings.hooks[event] = matchers;
@@ -56,5 +60,5 @@ for (const event of EVENTS) {
 
 fs.mkdirSync(path.dirname(SETTINGS), { recursive: true });
 fs.writeFileSync(SETTINGS, JSON.stringify(settings, null, 2) + '\n');
-console.log(uninstall ? 'claude-pet hooks removed.' : 'claude-pet hooks installed.');
+console.log(uninstall ? 'nunchi hooks removed.' : 'nunchi hooks installed.');
 console.log('Restart Claude Code sessions to apply.');

@@ -3,7 +3,7 @@
 
 /**
  * Claude Code hook handler.
- * Reads the hook event JSON from stdin, updates ~/.claude-pet-mood/state.json, exits.
+ * Reads the hook event JSON from stdin, updates ~/.nunchi/state.json, exits.
  * The user's prompt text is classified in-memory and never persisted.
  */
 

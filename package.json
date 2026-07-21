@@ -1,7 +1,7 @@
 {
-  "name": "claude-pet",
+  "name": "nunchi",
   "version": "0.1.0",
-  "description": "A desktop pet overlay for Claude Code that reacts to your tone",
+  "description": "A desktop pet that reads the room — reacts to your tone in Claude Code",
   "main": "main.js",
   "private": true,
   "scripts": {
