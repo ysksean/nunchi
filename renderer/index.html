@@ -107,7 +107,7 @@
   #pet.anim-sway    { animation: sway 1.6s ease-in-out infinite; }
   #pet.anim-sleep   { animation: breathe 5s ease-in-out infinite; }
 
-  @keyframes breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.965) translateY(2px); } }
+  @keyframes breathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-4px) scaleY(0.985); } }
   @keyframes bounce  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
   @keyframes shake   { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px) rotate(-2deg); } 75% { transform: translateX(4px) rotate(2deg); } }
   @keyframes droop   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px) scaleY(0.97); } }
@@ -121,13 +121,11 @@
   <div id="quit" title="종료">×</div>
   <div id="petwrap">
     <svg id="pet" viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg">
-      <!-- body -->
+      <!-- body: mochi ghost — wavy skirt, ahoge curl, no feet (it floats) -->
       <g id="body">
-        <rect x="10" y="20" width="120" height="115" rx="42" fill="#D97757" />
-        <rect x="10" y="20" width="120" height="115" rx="42" fill="#fff" opacity="0.07" />
-        <!-- feet -->
-        <ellipse cx="45" cy="138" rx="16" ry="9" fill="#C9664A" />
-        <ellipse cx="95" cy="138" rx="16" ry="9" fill="#C9664A" />
+        <path d="M70 24 Q66 10 76 8" stroke="#D8C7B2" stroke-width="3.5" fill="none" stroke-linecap="round" />
+        <path d="M20 78 Q20 26 70 26 Q120 26 120 78 L120 118 Q110 129 100 120 Q90 131 80 121 Q70 132 60 121 Q50 131 40 120 Q30 129 20 118 Z"
+              fill="#F7F0E6" stroke="#E7DAC7" stroke-width="2" />
       </g>
       <g id="face"></g>
       <g id="extras"></g>
@@ -138,7 +136,7 @@
 <script>
   const EYE = (cx, cy, r = 5.5) =>
     `<circle class="eye" cx="${cx}" cy="${cy}" r="${r}" fill="#2d2418"/>`;
-  const CHEEKS = (color = '#F2A98C', op = 0.8) =>
+  const CHEEKS = (color = '#F6C2BC', op = 0.8) =>
     `<ellipse class="cheek" cx="34" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>
      <ellipse class="cheek" cx="106" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>`;
 
@@ -154,7 +152,7 @@
              <path d="M85 70 Q92 62 99 70" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
              <path d="M56 84 Q70 100 84 84 Z" fill="#2d2418"/>
              <path d="M62 90 Q70 96 78 90 Z" fill="#E8886B"/>
-             ${CHEEKS('#F2A98C', 1)}`,
+             ${CHEEKS('#F6C2BC', 1)}`,
       anim: 'anim-bounce', bubble: '히히 🎉',
     },
     angry: {
@@ -206,8 +204,8 @@
              <path d="M100 61 l-12 7 12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
              <ellipse cx="70" cy="93" rx="6" ry="7.5" fill="#2d2418"/>
              <ellipse cx="70" cy="95.5" rx="3.5" ry="3.5" fill="#E8886B"/>
-             <ellipse class="cheek" cx="34" cy="82" rx="11" ry="6.5" fill="#F2A98C"/>
-             <ellipse class="cheek" cx="106" cy="82" rx="11" ry="6.5" fill="#F2A98C"/>`,
+             <ellipse class="cheek" cx="34" cy="82" rx="11" ry="6.5" fill="#F6C2BC"/>
+             <ellipse class="cheek" cx="106" cy="82" rx="11" ry="6.5" fill="#F6C2BC"/>`,
       anim: 'anim-idle', bubble: '앗!?',
     },
     sleeping: {
