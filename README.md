@@ -72,12 +72,6 @@ pnpm start   # 로컬 실행
 - [ ] Tauri 포팅 (바이너리 경량화)
 - [ ] 커스텀 펫 스킨
 
-## Credits
-
-"Claude Code hooks → 데스크톱 펫" 컨셉은 [IMMINJU/claude-pet](https://github.com/IMMINJU/claude-pet)이 먼저 선보였습니다.
-nunchi는 여기서 영감을 받았으며, **Claude의 작업 상태가 아닌 사용자의 말투에 반응**한다는 점이 다릅니다.
-도구별 상태 표시·테마·다국어가 필요하다면 원조 프로젝트를 추천합니다.
-
 ## License
 
 MIT
