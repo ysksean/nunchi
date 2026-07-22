@@ -7,11 +7,13 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
+    "demo:record": "electron scripts/record-demo.js",
     "hooks:install": "node scripts/install-hooks.js",
     "hooks:uninstall": "node scripts/install-hooks.js --uninstall"
   },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^38.0.0"
+    "electron": "^38.0.0",
+    "gifenc": "^1.0.3"
   }
 }

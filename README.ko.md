@@ -4,6 +4,8 @@
 
 **[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md)**
 
+<p align="center"><img src="assets/demo.gif" width="300" alt="눈치 데모 — 화내면 덜덜 떨고, 찌르면 볼이 출렁이고, 작업이 끝나면 만세합니다"></p>
+
 Claude Code와 연동되는 데스크톱 펫 오버레이. **사용자의 말투를 눈치채고 표정이 바뀝니다.**
 
 기존 Claude Code 펫들이 Claude의 작업 상태(도구 실행, 대기 등)에만 반응하는 것과 달리,

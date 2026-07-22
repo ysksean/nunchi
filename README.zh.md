@@ -4,6 +4,8 @@
 
 **[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md)**
 
+<p align="center"><img src="assets/demo.gif" width="300" alt="nunchi 演示 — 你发火它发抖，戳它脸颊抖，任务完成它欢呼"></p>
+
 一个与 Claude Code 联动的桌面宠物悬浮窗，**能读懂你的语气并用表情回应。**
 
 *Nunchi*（눈치）是韩语词，指察觉他人情绪并随之应对的能力——也就是"眼力见儿"。

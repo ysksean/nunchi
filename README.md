@@ -4,6 +4,8 @@
 
 **[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md)**
 
+<p align="center"><img src="assets/demo.gif" width="300" alt="nunchi demo — the ghost trembles when you're angry, jiggles when poked, and cheers when a task finishes"></p>
+
 A desktop pet overlay for Claude Code that **reads your tone and reacts with its face.**
 
 *Nunchi* (눈치) is the Korean art of sensing how people feel and responding accordingly.
