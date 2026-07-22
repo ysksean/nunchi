@@ -2,7 +2,7 @@
 
 > a desktop pet that reads the room
 
-**[English](README.md) | [한국어](README.ko.md)**
+**[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md)**
 
 Claude Code와 연동되는 데스크톱 펫 오버레이. **사용자의 말투를 눈치채고 표정이 바뀝니다.**
 

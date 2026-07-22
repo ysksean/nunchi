@@ -2,7 +2,7 @@
 
 > a desktop pet that reads the room
 
-**[English](README.md) | [한국어](README.ko.md)**
+**[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md)**
 
 A desktop pet overlay for Claude Code that **reads your tone and reacts with its face.**
 
