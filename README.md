@@ -37,6 +37,9 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 The Claude Code CLI and desktop app share hooks in `~/.claude/settings.json`, so both work.
 
+> **Note**: nunchi only reacts in Claude Code **sessions** (CLI, and Code sessions in the desktop app).
+> The desktop app's Chat tab doesn't run local hooks, so it isn't supported.
+
 ## Install
 
 ```bash

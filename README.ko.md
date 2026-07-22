@@ -36,6 +36,9 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 Claude Code CLI와 데스크톱 앱은 `~/.claude/settings.json`의 hooks를 공유하므로 둘 다 동작합니다.
 
+> **참고**: 눈치는 Claude Code **세션**(CLI, 데스크톱 앱의 Code 세션)에서만 반응합니다.
+> 데스크톱 앱의 Chat 탭은 로컬 훅을 실행하지 않아 지원되지 않습니다.
+
 ## 설치
 
 ```bash

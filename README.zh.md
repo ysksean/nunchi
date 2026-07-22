@@ -37,6 +37,9 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 Claude Code CLI 与桌面应用共享 `~/.claude/settings.json` 中的 hooks，两者都能工作。
 
+> **注意**：nunchi 只在 Claude Code **会话**（CLI、桌面应用的 Code 会话）中有反应。
+> 桌面应用的 Chat 标签页不会运行本地 hooks，因此不受支持。
+
 ## 安装
 
 ```bash
