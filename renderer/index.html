@@ -106,6 +106,7 @@
   #pet.anim-pulse   { animation: pulse 0.5s ease-in-out infinite; }
   #pet.anim-sway    { animation: sway 1.6s ease-in-out infinite; }
   #pet.anim-sleep   { animation: breathe 5s ease-in-out infinite; }
+  #pet.anim-tada    { animation: tada 0.85s ease-in-out infinite; }
 
   @keyframes breathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-4px) scaleY(0.985); } }
   @keyframes bounce  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
@@ -113,6 +114,13 @@
   @keyframes droop   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px) scaleY(0.97); } }
   @keyframes pulse   { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
   @keyframes sway    { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+  @keyframes tada {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    20%      { transform: translateY(-14px) rotate(-4deg); }
+    40%      { transform: translateY(0) rotate(0deg); }
+    60%      { transform: translateY(-14px) rotate(4deg); }
+    80%      { transform: translateY(0) rotate(0deg); }
+  }
 </style>
 </head>
 <body>
@@ -199,6 +207,16 @@
              ${CHEEKS()}`,
       anim: 'anim-bounce', bubble: '확인 필요해요! 🙋',
     },
+    done: {
+      face: `<path d="M41 68 Q48 60 55 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M85 68 Q92 60 99 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M57 84 Q70 99 83 84 Z" fill="#2d2418"/>
+             <path d="M63 90 Q70 96 77 90 Z" fill="#E8886B"/>
+             ${CHEEKS('#F6C2BC', 1)}`,
+      extras: `<path d="M116 22 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z" fill="#F2C14E"/>
+               <path d="M22 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" fill="#F2C14E"/>`,
+      anim: 'anim-tada', bubble: '다 됐어요! 🙌',
+    },
     poked: {
       face: `<path d="M40 61 l12 7 -12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
              <path d="M100 61 l-12 7 12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -219,6 +237,7 @@
   };
 
   const MOOD_TTL_MS = 8000;
+  const DONE_TTL_MS = 12000; // celebrate a finished task, then settle down
   const faceEl = document.getElementById('face');
   const extrasEl = document.getElementById('extras');
   const petEl = document.getElementById('pet');
@@ -234,7 +253,7 @@
     const f = FACES[name] || FACES.neutral;
     faceEl.innerHTML = f.face;
     extrasEl.innerHTML = f.extras || '';
-    petEl.className = f.anim;
+    petEl.setAttribute('class', f.anim); // SVG className is read-only — plain assignment is silently ignored
     bubbleEl.textContent = f.bubble;
     bubbleEl.classList.toggle('show', !!f.bubble);
   }
@@ -247,7 +266,13 @@
       moodTimer = setTimeout(resolve, MOOD_TTL_MS - moodAge + 50);
       return;
     }
-    setFace(FACES[state.claudeState] ? state.claudeState : 'neutral');
+    let cs = FACES[state.claudeState] ? state.claudeState : 'neutral';
+    if (cs === 'done') {
+      const doneAge = Date.now() - state.claudeStateAt;
+      if (doneAge >= DONE_TTL_MS) cs = 'neutral';
+      else moodTimer = setTimeout(resolve, DONE_TTL_MS - doneAge + 50);
+    }
+    setFace(cs);
   }
 
   // In a plain browser <svg id="pet"> shadows window.pet (named element access),

@@ -8,7 +8,7 @@
  */
 
 const { classifyMood } = require('../src/mood');
-const { writeState } = require('../src/state');
+const { readState, writeState } = require('../src/state');
 
 function main(input) {
   let event;
@@ -37,7 +37,13 @@ function main(input) {
     case 'Notification':
       writeState({ claudeState: 'waiting', claudeStateAt: now });
       break;
-    case 'Stop':
+    case 'Stop': {
+      // Celebrate only when real work just finished (tools were running);
+      // a plain chat reply ends quietly so the pet isn't bouncing all day.
+      const wasWorking = readState().claudeState === 'working';
+      writeState({ claudeState: wasWorking ? 'done' : 'idle', claudeStateAt: now });
+      break;
+    }
     case 'SubagentStop':
       writeState({ claudeState: 'idle', claudeStateAt: now });
       break;
