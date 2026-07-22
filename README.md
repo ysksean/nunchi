@@ -2,77 +2,80 @@
 
 > a desktop pet that reads the room
 
-Claude Code와 연동되는 데스크톱 펫 오버레이. **사용자의 말투를 눈치채고 표정이 바뀝니다.**
+**[English](README.md) | [한국어](README.ko.md)**
 
-기존 Claude Code 펫들이 Claude의 작업 상태(도구 실행, 대기 등)에만 반응하는 것과 달리,
-nunchi는 `UserPromptSubmit` 훅으로 받은 프롬프트의 어조를 분석해서 감정을 표현합니다.
+A desktop pet overlay for Claude Code that **reads your tone and reacts with its face.**
 
-- 화내면 😰 미안해하고, 칭찬하면 🎉 신나고, 지쳐 보이면 🥺 위로합니다
-- Claude의 작업 상태(생각중 / 작업중 / 허락 대기 / 휴식)도 함께 표시
-- 프롬프트 원문은 어디에도 저장하지 않습니다 — 메모리에서 분류 후 감정 결과만 기록
+*Nunchi* (눈치) is the Korean art of sensing how people feel and responding accordingly.
+While other Claude Code pets only react to Claude's work state (tool runs, waiting, etc.),
+nunchi analyzes the tone of your prompts via the `UserPromptSubmit` hook and expresses emotions.
 
-## 표정
+- Snap at it and it 😰 apologizes; praise it and it 🎉 jumps for joy; sound tired and it 🥺 droops with you
+- Also shows Claude's work state (thinking / working / waiting for permission / resting)
+- Your prompt text is never stored — it's classified in memory and only the resulting emotion is written
 
-| 트리거 | 표정 |
+## Expressions
+
+| Trigger | Expression |
 |--------|------|
-| 짜증/화난 말투 (`왜 안 돼??`, `짜증나`) | 미안해하며 덜덜 떨기 |
-| 칭찬/기쁨 (`완벽해 고마워!`, `ㅋㅋ 좋네`) | 폴짝폴짝 점프 |
-| 지친 말투 (`하... 힘들다 ㅠㅠ`) | 같이 시무룩 + 눈물 |
-| 급한 말투 (`빨리!`, `asap`) | 눈 커지고 허둥지둥 |
-| Claude가 도구 실행 중 | 집중해서 열일 |
-| 권한 확인 대기 | 방방 뛰며 알림 |
-| 작업 완료 (도구 작업 후 턴 종료) | ✨ 만세하며 "다 됐어요!" 12초 |
-| 세션 종료 | Zzz |
+| Irritated / angry tone (`왜 안 돼??`, `wtf`) | Trembles apologetically |
+| Praise / joy (`완벽해 고마워!`, `thanks!`) | Bounces happily |
+| Tired tone (`하... 힘들다 ㅠㅠ`, `sigh`) | Droops with teary eyes |
+| Rushed tone (`빨리!`, `asap`) | Wide-eyed panic |
+| Claude running tools | Focused work mode |
+| Waiting for permission | Bounces for attention |
+| Task done (turn ends after tool work) | ✨ Cheers "다 됐어요!" for 12s |
+| Session end | Zzz |
 
-## 아키텍처
+## Architecture
 
 ```
-Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron 오버레이
-   (UserPromptSubmit,   (말투 분류,      (감정 + 작업 상태만,      (투명·항상 위,
-    PreToolUse, Stop…)    상태 기록)       프롬프트 원문 없음)       SVG 표정 렌더)
+Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron overlay
+   (UserPromptSubmit,   (tone check,     (emotion + work state    (transparent, always
+    PreToolUse, Stop…)    state write)     only, no prompt text)    on top, SVG face)
 ```
 
-Claude Code CLI와 데스크톱 앱은 `~/.claude/settings.json`의 hooks를 공유하므로 둘 다 동작합니다.
+The Claude Code CLI and desktop app share hooks in `~/.claude/settings.json`, so both work.
 
-## 설치
+## Install
 
 ```bash
 git clone https://github.com/ysksean/nunchi.git
 cd nunchi
 pnpm install
-pnpm hooks:install   # ~/.claude/settings.json에 훅 등록 (백업 자동 생성)
-pnpm start           # 펫 실행
+pnpm hooks:install   # registers hooks in ~/.claude/settings.json (auto-backup)
+pnpm start           # launch the pet
 ```
 
-제거:
+Uninstall:
 
 ```bash
 pnpm hooks:uninstall
 ```
 
-## 사용법
+## Usage
 
-- **콕 찌르기**: 펫을 클릭하면 몸이 말랑하게 눌렸다 튕기고, 볼따구가 출렁이며 반응합니다
-- 펫을 드래그해서 원하는 위치로 이동 (누르는 동안 찌부러진 채로 따라옵니다)
-- 펫에 마우스를 올리면 볼이 살짝 씰룩 + `×` 버튼으로 종료
-- 창이 포커스된 상태에서 숫자키 1~9로 표정 미리보기 (개발용)
+- **Poke it**: click the pet — its body squishes, springs back like jelly, and its cheeks jiggle
+- Drag the pet to move it anywhere (it stays squished while held)
+- Hover for a subtle cheek wiggle + the `×` button to quit
+- With the window focused, number keys 1–9 preview expressions (dev aid)
 
-## 개발
+## Development
 
 ```bash
-pnpm test    # 말투 분류기 테스트
-pnpm start   # 로컬 실행
+pnpm test    # tone classifier tests
+pnpm start   # run locally
 ```
 
-말투 분류는 [src/mood.js](src/mood.js)의 키워드 휴리스틱입니다. 네트워크 호출 없이 즉시 동작하며,
-패턴을 추가하려면 `PATTERNS`에 정규식을 넣으면 됩니다.
+Tone classification is a keyword heuristic in [src/mood.js](src/mood.js) — no network calls, instant.
+To add patterns, drop a regex into `PATTERNS`.
 
-## 로드맵
+## Roadmap
 
-- [ ] Haiku 기반 감정 분류 옵션 (휴리스틱보다 정확, opt-in)
-- [ ] 멀티 세션 표시
-- [ ] Tauri 포팅 (바이너리 경량화)
-- [ ] 커스텀 펫 스킨
+- [ ] Haiku-based emotion classification (more accurate than heuristics, opt-in)
+- [ ] Multi-session display
+- [ ] Tauri port (smaller binary)
+- [ ] Custom pet skins
 
 ## License
 
