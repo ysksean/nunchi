@@ -49,6 +49,12 @@ ipcMain.on('pet:quit', () => app.quit());
 ipcMain.on('pet:move', (_e, x, y) => {
   if (win && !win.isDestroyed()) win.setPosition(x, y);
 });
+ipcMain.on('pet:resize', (_e, w, h) => {
+  if (!win || win.isDestroyed()) return;
+  // Anchor the bottom edge so the pet's feet stay put while scaling.
+  const b = win.getBounds();
+  win.setBounds({ x: b.x, y: b.y + (b.height - h), width: w, height: h });
+});
 
 app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide();

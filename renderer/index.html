@@ -283,6 +283,35 @@
     document.getElementById('quit').addEventListener('click', () => api.quit());
   }
 
+  // ── Size: scroll over the pet to scale it (60%–200%), persisted across runs ──
+  const BASE_W = 180;
+  const BASE_H = 210;
+  const stageEl = document.getElementById('stage');
+  let scale = Math.min(2, Math.max(0.6, parseFloat(localStorage.getItem('nunchi-scale')) || 1));
+  let scaleHintTimer = null;
+
+  function applyScale() {
+    stageEl.style.zoom = scale;
+    if (api && api.resize) api.resize(Math.round(BASE_W * scale), Math.round(BASE_H * scale));
+  }
+
+  stageEl.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    scale = Math.min(2, Math.max(0.6, scale * Math.exp(-e.deltaY * 0.0015)));
+    applyScale();
+    localStorage.setItem('nunchi-scale', String(scale));
+    bubbleEl.textContent = Math.round(scale * 100) + '%';
+    bubbleEl.classList.add('show');
+    clearTimeout(scaleHintTimer);
+    scaleHintTimer = setTimeout(() => {
+      const f = FACES[current] || FACES.neutral;
+      bubbleEl.textContent = f.bubble;
+      bubbleEl.classList.toggle('show', !!f.bubble);
+    }, 900);
+  }, { passive: false });
+
+  applyScale();
+
   // ── Touch: press to squish, release to jelly-bounce, drag to move the window ──
   const POKE_LINES = ['앗!?', '꺄악 깜짝이야', '히히 간지러워요', '왜 찔러요 ㅠㅠ', '말랑말랑하죠'];
   const wrapEl = document.getElementById('petwrap');

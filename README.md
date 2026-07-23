@@ -62,6 +62,7 @@ pnpm hooks:uninstall
 
 - **Poke it**: click the pet — its body squishes, springs back like jelly, and its cheeks jiggle
 - Drag the pet to move it anywhere (it stays squished while held)
+- **Resize**: scroll over the pet — 60% to 200%, persists across restarts
 - Hover for a subtle cheek wiggle + the `×` button to quit
 - With the window focused, number keys 1–9 preview expressions (dev aid)
 
