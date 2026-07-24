@@ -66,10 +66,27 @@ pnpm hooks:uninstall
 - Hover for a subtle cheek wiggle + the `×` button to quit
 - With the window focused, number keys 1–9 preview expressions (dev aid)
 
+## Skins
+
+The character is a single JSON file. Bundled: **ghost · cat · slime · hamster**.
+
+```bash
+pnpm skin list              # installed skins
+pnpm skin add <name>        # install from the community registry
+pnpm skin remove <name>     # uninstall
+```
+
+**Right-click** the pet to switch skins.
+
+To make your own you only draw the body SVG — the ten expressions, cheek physics and animations
+are layered on by the core. See [docs/SKINS.md](docs/SKINS.md) for the coordinate system and the
+allowed SVG subset. Downloaded skins are sanitized against a strict whitelist before install, so
+scripts and external references never make it through.
+
 ## Development
 
 ```bash
-pnpm test    # tone classifier tests
+pnpm test    # tone classifier + skin sanitizer tests
 pnpm start   # run locally
 ```
 

@@ -66,10 +66,26 @@ pnpm hooks:uninstall
 - 鼠标悬停时脸颊轻轻抖动 + 显示 `×` 退出按钮
 - 窗口聚焦时按数字键 1–9 预览表情（开发用）
 
+## 皮肤
+
+角色就是一个 JSON 文件。内置：**ghost · cat · slime · hamster**。
+
+```bash
+pnpm skin list              # 已安装的皮肤
+pnpm skin add <名称>         # 从社区registry安装
+pnpm skin remove <名称>      # 卸载
+```
+
+**右键点击**宠物即可切换皮肤。
+
+自己做皮肤只需画身体 SVG——十种表情、脸颊物理、动画都由核心自动叠加。
+坐标系与允许的 SVG 子集见 [docs/SKINS.md](docs/SKINS.md)。
+下载的皮肤在安装前会经过严格白名单净化，脚本和外部引用一律无法通过。
+
 ## 开发
 
 ```bash
-pnpm test    # 语气分类器测试
+pnpm test    # 语气分类器 + 皮肤净化器测试
 pnpm start   # 本地运行
 ```
 

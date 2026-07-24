@@ -2,6 +2,20 @@
 
 nunchi의 모든 주요 변경사항을 기록합니다. [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [0.3.0] - 2026-07-24
+
+### Added
+- 스킨 시스템: 캐릭터를 JSON 한 파일로 교체. 빌트인 4종 (ghost / cat / slime / hamster)
+- 펫 우클릭 → 스킨 선택, 스킨 폴더 열기, 새로고침 메뉴
+- 스킨 CLI: `pnpm skin list` / `add <이름·https URL>` / `remove <이름>`
+- 커뮤니티 레지스트리 연동 (`pnpm skin add <이름>` → nunchi-skins 저장소)
+- 제작 가이드 [docs/SKINS.md](docs/SKINS.md) + 예제 [examples/skins](examples/skins)
+
+### Security
+- 엄격한 SVG 새니타이저: 화이트리스트 요소·속성만 통과시키고 나머지는 재직렬화 과정에서 삭제.
+  `<script>`, `on*` 핸들러, `<foreignObject>`, 외부 참조(`url()`·`image`·`use`), `javascript:`/`data:` 값 차단.
+  스킨 설치 시 제거된 항목을 사용자에게 경고로 표시
+
 ## [0.2.0] - 2026-07-23
 
 ### Added

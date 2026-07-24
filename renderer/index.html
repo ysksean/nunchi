@@ -129,12 +129,7 @@
   <div id="quit" title="종료">×</div>
   <div id="petwrap">
     <svg id="pet" viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg">
-      <!-- body: mochi ghost — wavy skirt, ahoge curl, no feet (it floats) -->
-      <g id="body">
-        <path d="M70 24 Q66 10 76 8" stroke="#D8C7B2" stroke-width="3.5" fill="none" stroke-linecap="round" />
-        <path d="M20 78 Q20 26 70 26 Q120 26 120 78 L120 118 Q110 129 100 120 Q90 131 80 121 Q70 132 60 121 Q50 131 40 120 Q30 129 20 118 Z"
-              fill="#F7F0E6" stroke="#E7DAC7" stroke-width="2" />
-      </g>
+      <g id="body"></g>
       <g id="face"></g>
       <g id="extras"></g>
     </svg>
@@ -142,107 +137,129 @@
 </div>
 
 <script>
+  const DEFAULT_PALETTE = { faceInk: '#2d2418', cheek: '#F6C2BC' };
+
+  // Faces are drawn on top of whatever body the skin provides, so they are
+  // rebuilt whenever the palette changes.
+  function buildFaces(palette) {
+  const ink = palette.faceInk || DEFAULT_PALETTE.faceInk;
+  const blush = palette.cheek || DEFAULT_PALETTE.cheek;
+
   const EYE = (cx, cy, r = 5.5) =>
-    `<circle class="eye" cx="${cx}" cy="${cy}" r="${r}" fill="#2d2418"/>`;
-  const CHEEKS = (color = '#F6C2BC', op = 0.8) =>
+    `<circle class="eye" cx="${cx}" cy="${cy}" r="${r}" fill="${ink}"/>`;
+  const CHEEKS = (color = blush, op = 0.8) =>
     `<ellipse class="cheek" cx="34" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>
      <ellipse class="cheek" cx="106" cy="82" rx="9" ry="5.5" fill="${color}" opacity="${op}"/>`;
 
-  const FACES = {
+  return {
     neutral: {
       face: `${EYE(48, 68)}${EYE(92, 68)}
-             <path d="M62 88 Q70 94 78 88" stroke="#2d2418" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+             <path d="M62 88 Q70 94 78 88" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
              ${CHEEKS()}`,
       anim: 'anim-idle', bubble: '',
     },
     happy: {
-      face: `<path d="M41 70 Q48 62 55 70" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M85 70 Q92 62 99 70" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M56 84 Q70 100 84 84 Z" fill="#2d2418"/>
+      face: `<path d="M41 70 Q48 62 55 70" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M85 70 Q92 62 99 70" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M56 84 Q70 100 84 84 Z" fill="${ink}"/>
              <path d="M62 90 Q70 96 78 90 Z" fill="#E8886B"/>
-             ${CHEEKS('#F6C2BC', 1)}`,
+             ${CHEEKS(blush, 1)}`,
       anim: 'anim-bounce', bubble: '히히 🎉',
     },
     angry: {
-      face: `<line x1="40" y1="58" x2="56" y2="64" stroke="#2d2418" stroke-width="4" stroke-linecap="round"/>
-             <line x1="100" y1="58" x2="84" y2="64" stroke="#2d2418" stroke-width="4" stroke-linecap="round"/>
+      face: `<line x1="40" y1="58" x2="56" y2="64" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>
+             <line x1="100" y1="58" x2="84" y2="64" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>
              ${EYE(48, 72, 4.5)}${EYE(92, 72, 4.5)}
-             <path d="M60 94 Q70 86 80 94" stroke="#2d2418" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+             <path d="M60 94 Q70 86 80 94" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
              ${CHEEKS('#E05B5B', 0.5)}`,
       extras: `<path d="M112 30 l7 -7 M116 38 l9 -3 M108 24 l3 -9" stroke="#E05B5B" stroke-width="3" stroke-linecap="round"/>`,
       anim: 'anim-shake', bubble: '헉... 죄송해요 💦',
     },
     sad: {
-      face: `<path d="M42 66 Q48 71 54 66" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M86 66 Q92 71 98 66" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M62 92 Q70 87 78 92" stroke="#2d2418" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+      face: `<path d="M42 66 Q48 71 54 66" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M86 66 Q92 71 98 66" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M62 92 Q70 87 78 92" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
       extras: `<path d="M100 74 q6 10 0 13 q-6 -3 0 -13" fill="#7EB8E8"/>`,
       anim: 'anim-droop', bubble: '힘내요 우리... 🥺',
     },
     urgent: {
-      face: `<circle cx="48" cy="68" r="7.5" fill="#2d2418"/><circle cx="50" cy="66" r="2.5" fill="#fff"/>
-             <circle cx="92" cy="68" r="7.5" fill="#2d2418"/><circle cx="94" cy="66" r="2.5" fill="#fff"/>
-             <ellipse cx="70" cy="92" rx="7" ry="9" fill="#2d2418"/>`,
+      face: `<circle cx="48" cy="68" r="7.5" fill="${ink}"/><circle cx="50" cy="66" r="2.5" fill="#fff"/>
+             <circle cx="92" cy="68" r="7.5" fill="${ink}"/><circle cx="94" cy="66" r="2.5" fill="#fff"/>
+             <ellipse cx="70" cy="92" rx="7" ry="9" fill="${ink}"/>`,
       extras: `<text x="118" y="30" font-size="26" font-weight="bold" fill="#E05B5B">!</text>
                <path d="M24 40 q-5 9 0 12 q5 -3 0 -12" fill="#7EB8E8"/>`,
       anim: 'anim-pulse', bubble: '최선을 다할게요!! 🏃',
     },
     thinking: {
       face: `${EYE(50, 64)}${EYE(94, 64)}
-             <ellipse cx="72" cy="90" rx="4.5" ry="5.5" fill="#2d2418"/>`,
+             <ellipse cx="72" cy="90" rx="4.5" ry="5.5" fill="${ink}"/>`,
       extras: `<circle cx="112" cy="26" r="3" fill="#fff" opacity="0.9"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"/></circle>
                <circle cx="122" cy="18" r="4" fill="#fff" opacity="0.9"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.3s" repeatCount="indefinite"/></circle>`,
       anim: 'anim-idle', bubble: '음...',
     },
     working: {
-      face: `<line x1="42" y1="68" x2="54" y2="68" stroke="#2d2418" stroke-width="4" stroke-linecap="round"/>
-             <line x1="86" y1="68" x2="98" y2="68" stroke="#2d2418" stroke-width="4" stroke-linecap="round"/>
-             <path d="M63 88 Q70 92 77 88" stroke="#2d2418" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+      face: `<line x1="42" y1="68" x2="54" y2="68" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>
+             <line x1="86" y1="68" x2="98" y2="68" stroke="${ink}" stroke-width="4" stroke-linecap="round"/>
+             <path d="M63 88 Q70 92 77 88" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
       anim: 'anim-sway', bubble: '열일중 ⌨️',
     },
     waiting: {
-      face: `<circle cx="48" cy="68" r="7" fill="#2d2418"/><circle cx="50.5" cy="65.5" r="2.8" fill="#fff"/>
-             <circle cx="92" cy="68" r="7" fill="#2d2418"/><circle cx="94.5" cy="65.5" r="2.8" fill="#fff"/>
-             <path d="M62 86 Q70 93 78 86" stroke="#2d2418" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      face: `<circle cx="48" cy="68" r="7" fill="${ink}"/><circle cx="50.5" cy="65.5" r="2.8" fill="#fff"/>
+             <circle cx="92" cy="68" r="7" fill="${ink}"/><circle cx="94.5" cy="65.5" r="2.8" fill="#fff"/>
+             <path d="M62 86 Q70 93 78 86" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
              ${CHEEKS()}`,
       anim: 'anim-bounce', bubble: '확인 필요해요! 🙋',
     },
     done: {
-      face: `<path d="M41 68 Q48 60 55 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M85 68 Q92 60 99 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M57 84 Q70 99 83 84 Z" fill="#2d2418"/>
+      face: `<path d="M41 68 Q48 60 55 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M85 68 Q92 60 99 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M57 84 Q70 99 83 84 Z" fill="${ink}"/>
              <path d="M63 90 Q70 96 77 90 Z" fill="#E8886B"/>
-             ${CHEEKS('#F6C2BC', 1)}`,
+             ${CHEEKS(blush, 1)}`,
       extras: `<path d="M116 22 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z" fill="#F2C14E"/>
                <path d="M22 14 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" fill="#F2C14E"/>`,
       anim: 'anim-tada', bubble: '다 됐어요! 🙌',
     },
     poked: {
-      face: `<path d="M40 61 l12 7 -12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-             <path d="M100 61 l-12 7 12 7" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-             <ellipse cx="70" cy="93" rx="6" ry="7.5" fill="#2d2418"/>
+      face: `<path d="M40 61 l12 7 -12 7" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="M100 61 l-12 7 12 7" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <ellipse cx="70" cy="93" rx="6" ry="7.5" fill="${ink}"/>
              <ellipse cx="70" cy="95.5" rx="3.5" ry="3.5" fill="#E8886B"/>
-             <ellipse class="cheek" cx="34" cy="82" rx="11" ry="6.5" fill="#F6C2BC"/>
-             <ellipse class="cheek" cx="106" cy="82" rx="11" ry="6.5" fill="#F6C2BC"/>`,
+             <ellipse class="cheek" cx="34" cy="82" rx="11" ry="6.5" fill="${blush}"/>
+             <ellipse class="cheek" cx="106" cy="82" rx="11" ry="6.5" fill="${blush}"/>`,
       anim: 'anim-idle', bubble: '앗!?',
     },
     sleeping: {
-      face: `<path d="M42 68 Q48 72 54 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <path d="M86 68 Q92 72 98 68" stroke="#2d2418" stroke-width="4" fill="none" stroke-linecap="round"/>
-             <ellipse cx="70" cy="90" rx="3.5" ry="4.5" fill="#2d2418"/>`,
+      face: `<path d="M42 68 Q48 72 54 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M86 68 Q92 72 98 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <ellipse cx="70" cy="90" rx="3.5" ry="4.5" fill="${ink}"/>`,
       extras: `<text x="106" y="30" font-size="16" fill="#8a7f6e">Z</text>
                <text x="118" y="18" font-size="12" fill="#8a7f6e">z</text>`,
       anim: 'anim-sleep', bubble: '',
     },
   };
+  }
 
   const MOOD_TTL_MS = 8000;
   const DONE_TTL_MS = 12000; // celebrate a finished task, then settle down
   const faceEl = document.getElementById('face');
   const extrasEl = document.getElementById('extras');
+  const bodyEl = document.getElementById('body');
   const petEl = document.getElementById('pet');
   const bubbleEl = document.getElementById('bubble');
 
+  const FALLBACK_SKIN = {
+    name: 'ghost',
+    bodySvg:
+      '<path d="M70 24 Q66 10 76 8" stroke="#D8C7B2" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M20 78 Q20 26 70 26 Q120 26 120 78 L120 118 Q110 129 100 120 Q90 131 80 121 ' +
+      'Q70 132 60 121 Q50 131 40 120 Q30 129 20 118 Z" fill="#F7F0E6" stroke="#E7DAC7" stroke-width="2"/>',
+    palette: DEFAULT_PALETTE,
+  };
+
+  let FACES = buildFaces(DEFAULT_PALETTE);
+  let skins = [FALLBACK_SKIN];
+  let skinName = localStorage.getItem('nunchi-skin') || 'ghost';
   let current = null;
   let state = { mood: 'neutral', moodAt: 0, claudeState: 'idle', claudeStateAt: 0 };
   let moodTimer = null;
@@ -275,12 +292,31 @@
     setFace(cs);
   }
 
+  function applySkin(name) {
+    const skin = skins.find((s) => s.name === name) || skins[0] || FALLBACK_SKIN;
+    skinName = skin.name;
+    localStorage.setItem('nunchi-skin', skinName);
+    bodyEl.innerHTML = skin.bodySvg;
+    FACES = buildFaces(skin.palette || DEFAULT_PALETTE);
+    current = null; // force a re-render with the new palette
+    resolve();
+  }
+
   // In a plain browser <svg id="pet"> shadows window.pet (named element access),
   // so check for the actual preload API rather than mere existence.
   const api = window.pet && typeof window.pet.onState === 'function' ? window.pet : null;
   if (api) {
     api.onState((s) => { state = s; resolve(); });
+    api.onSkins((list) => {
+      if (Array.isArray(list) && list.length) skins = list;
+      applySkin(skinName);
+    });
+    api.onSkin((name) => applySkin(name));
     document.getElementById('quit').addEventListener('click', () => api.quit());
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      api.menu(skinName);
+    });
   }
 
   // ── Size: scroll over the pet to scale it (60%–200%), persisted across runs ──
@@ -370,7 +406,7 @@
     if (i >= 0 && i < ORDER.length) setFace(ORDER[i]);
   });
 
-  setFace('neutral');
+  applySkin(skinName);
 </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "nunchi",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A desktop pet that reads the room — reacts to your tone in Claude Code",
   "main": "main.js",
   "private": true,
@@ -8,6 +8,7 @@
     "start": "electron .",
     "test": "node --test",
     "demo:record": "electron scripts/record-demo.js",
+    "skin": "node scripts/skin.js",
     "hooks:install": "node scripts/install-hooks.js",
     "hooks:uninstall": "node scripts/install-hooks.js --uninstall"
   },

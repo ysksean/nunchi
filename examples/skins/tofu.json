@@ -1,0 +1,6 @@
+{
+  "name": "tofu",
+  "author": "nunchi",
+  "bodySvg": "<rect x=\"18\" y=\"30\" width=\"104\" height=\"100\" rx=\"16\" fill=\"#FFF8E7\" stroke=\"#E4D9C0\" stroke-width=\"2\"/><rect x=\"18\" y=\"30\" width=\"104\" height=\"14\" rx=\"7\" fill=\"#ffffff\" opacity=\"0.5\"/>",
+  "palette": { "cheek": "#FFC9C9", "faceInk": "#3A3226" }
+}

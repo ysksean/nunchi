@@ -1,9 +1,10 @@
 'use strict';
 
-const { app, BrowserWindow, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, screen, shell, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
+const { allSkins, SKINS_DIR } = require('./src/skin');
 
 const WIN_W = 180;
 const WIN_H = 210;
@@ -35,7 +36,12 @@ function createWindow() {
   const push = () => {
     if (win && !win.isDestroyed()) win.webContents.send('pet:state', readState());
   };
-  win.webContents.on('did-finish-load', push);
+  win.webContents.on('did-finish-load', () => {
+    const { skins, errors } = allSkins();
+    for (const e of errors) console.warn(`skipped skin ${e.file}: ${e.message}`);
+    win.webContents.send('pet:skins', skins);
+    push();
+  });
 
   // watchFile (polling) survives the atomic rename the hook writer uses.
   fs.watchFile(STATE_FILE, { interval: 300 }, push);
@@ -49,6 +55,31 @@ ipcMain.on('pet:quit', () => app.quit());
 ipcMain.on('pet:move', (_e, x, y) => {
   if (win && !win.isDestroyed()) win.setPosition(x, y);
 });
+ipcMain.on('pet:menu', (_e, currentSkin) => {
+  if (!win || win.isDestroyed()) return;
+  const { skins } = allSkins();
+  const template = skins.map((skin) => ({
+    label: skin.name + (skin.author && skin.author !== 'nunchi' ? ` — ${skin.author}` : ''),
+    type: 'radio',
+    checked: skin.name === currentSkin,
+    click: () => win.webContents.send('pet:skin', skin.name),
+  }));
+  template.push(
+    { type: 'separator' },
+    {
+      label: '스킨 폴더 열기',
+      click: () => {
+        fs.mkdirSync(SKINS_DIR, { recursive: true });
+        shell.openPath(SKINS_DIR);
+      },
+    },
+    { label: '스킨 새로고침', click: () => win.reload() },
+    { type: 'separator' },
+    { label: '종료', click: () => app.quit() }
+  );
+  Menu.buildFromTemplate(template).popup({ window: win });
+});
+
 ipcMain.on('pet:resize', (_e, w, h) => {
   if (!win || win.isDestroyed()) return;
   // Anchor the bottom edge so the pet's feet stay put while scaling.
