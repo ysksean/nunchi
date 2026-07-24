@@ -1,6 +1,6 @@
 {
   "name": "nunchi",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A desktop pet that reads the room — reacts to your tone in Claude Code",
   "main": "main.js",
   "private": true,

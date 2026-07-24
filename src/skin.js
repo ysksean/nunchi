@@ -180,39 +180,47 @@ function builtinSkins() {
       name: 'cat',
       author: 'nunchi',
       bodySvg:
-        '<path d="M26 42 L34 8 L62 26 Z" fill="#E8926F"/><path d="M33 34 L37 16 L51 25 Z" fill="#F6BBA4"/>' +
-        '<path d="M114 42 L106 8 L78 26 Z" fill="#E8926F"/><path d="M107 34 L103 16 L89 25 Z" fill="#F6BBA4"/>' +
-        '<path d="M124 112 Q142 104 134 88" stroke="#D97757" stroke-width="9" fill="none" stroke-linecap="round"/>' +
-        '<rect x="14" y="24" width="112" height="112" rx="46" fill="#E8926F"/>' +
-        '<ellipse cx="45" cy="138" rx="15" ry="8" fill="#D97757"/>' +
-        '<ellipse cx="95" cy="138" rx="15" ry="8" fill="#D97757"/>' +
-        '<path d="M4 74 L24 78 M4 88 L24 86" stroke="#C9664A" stroke-width="2.5" stroke-linecap="round"/>' +
-        '<path d="M136 74 L116 78 M136 88 L116 86" stroke="#C9664A" stroke-width="2.5" stroke-linecap="round"/>',
-      palette: { cheek: '#F2A98C', faceInk: '#2d2418' },
+        '<path d="M112 130 Q137 127 134 105 Q132 93 121 97" stroke="#E08A63" stroke-width="10" fill="none" stroke-linecap="round"/>' +
+        '<path d="M30 52 Q22 20 40 16 Q56 20 62 42 Z" fill="#F0A279"/>' +
+        '<path d="M36 46 Q32 27 42 24 Q52 28 55 42 Z" fill="#F7C4AE"/>' +
+        '<path d="M110 52 Q118 20 100 16 Q84 20 78 42 Z" fill="#F0A279"/>' +
+        '<path d="M104 46 Q108 27 98 24 Q88 28 85 42 Z" fill="#F7C4AE"/>' +
+        '<path d="M70 26 C106 26 126 52 126 86 C126 120 102 138 70 138 C38 138 14 120 14 86 C14 52 34 26 70 26 Z" fill="#F0A279"/>' +
+        '<ellipse cx="70" cy="112" rx="26" ry="18" fill="#FBD9C6" opacity="0.55"/>' +
+        '<ellipse cx="50" cy="137" rx="13" ry="7" fill="#E08A63"/>' +
+        '<ellipse cx="90" cy="137" rx="13" ry="7" fill="#E08A63"/>' +
+        '<path d="M14 76 L28 79 M14 88 L28 86" stroke="#D4794F" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>' +
+        '<path d="M126 76 L112 79 M126 88 L112 86" stroke="#D4794F" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>',
+      palette: { cheek: '#F5A98F', faceInk: '#3B2A21' },
     },
     {
       name: 'slime',
       author: 'nunchi',
       bodySvg:
-        '<ellipse cx="70" cy="132" rx="56" ry="8" fill="#86D9C0" opacity="0.45"/>' +
-        '<path d="M84 22 Q82 10 90 8" stroke="#5FBFA4" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-        '<circle cx="92" cy="8" r="4.5" fill="#86D9C0"/>' +
-        '<path d="M18 128 Q9 128 12 114 Q17 66 34 45 Q50 26 70 26 Q90 26 106 45 Q123 66 128 114 ' +
-        'Q131 128 122 128 Z" fill="#86D9C0"/>' +
-        '<ellipse cx="48" cy="42" rx="13" ry="7" fill="#ffffff" opacity="0.4" transform="rotate(-18 48 42)"/>',
-      palette: { cheek: '#F2A0A0', faceInk: '#1E4A3D' },
+        '<ellipse cx="70" cy="139" rx="54" ry="7" fill="#4FA98D" opacity="0.28"/>' +
+        '<circle cx="104" cy="20" r="5" fill="#8FE0C6" opacity="0.85"/>' +
+        '<circle cx="116" cy="32" r="3" fill="#8FE0C6" opacity="0.6"/>' +
+        '<path d="M70 32 C98 32 114 50 122 74 C130 98 136 126 118 134 C99 142 41 142 22 134 ' +
+        'C4 126 10 98 18 74 C26 50 42 32 70 32 Z" fill="#8FE0C6"/>' +
+        '<ellipse cx="48" cy="52" rx="16" ry="9" fill="#ffffff" opacity="0.5" transform="rotate(-28 48 52)"/>' +
+        '<circle cx="104" cy="106" r="7" fill="#ffffff" opacity="0.22"/>' +
+        '<circle cx="92" cy="120" r="4.5" fill="#ffffff" opacity="0.16"/>' +
+        '<circle cx="30" cy="112" r="5" fill="#ffffff" opacity="0.18"/>',
+      palette: { cheek: '#F0A0A8', faceInk: '#1E4A3D' },
     },
     {
       name: 'hamster',
       author: 'nunchi',
       bodySvg:
-        '<circle cx="38" cy="28" r="13" fill="#EFC49C"/><circle cx="38" cy="28" r="7" fill="#F6B8AC"/>' +
-        '<circle cx="102" cy="28" r="13" fill="#EFC49C"/><circle cx="102" cy="28" r="7" fill="#F6B8AC"/>' +
-        '<rect x="12" y="24" width="116" height="114" rx="50" fill="#F3D1AB"/>' +
-        '<ellipse cx="70" cy="112" rx="30" ry="20" fill="#FBEAD2"/>' +
-        '<ellipse cx="52" cy="136" rx="10" ry="6" fill="#E8B98F"/>' +
-        '<ellipse cx="88" cy="136" rx="10" ry="6" fill="#E8B98F"/>',
-      palette: { cheek: '#F6B8A8', faceInk: '#2d2418' },
+        '<circle cx="36" cy="34" r="14" fill="#EDBE8E"/><circle cx="36" cy="34" r="8" fill="#F5AFA2"/>' +
+        '<circle cx="104" cy="34" r="14" fill="#EDBE8E"/><circle cx="104" cy="34" r="8" fill="#F5AFA2"/>' +
+        '<ellipse cx="26" cy="88" rx="15" ry="14" fill="#F5CFA0"/>' +
+        '<ellipse cx="114" cy="88" rx="15" ry="14" fill="#F5CFA0"/>' +
+        '<path d="M70 26 C108 26 128 54 128 90 C128 122 104 140 70 140 C36 140 12 122 12 90 C12 54 32 26 70 26 Z" fill="#F5CFA0"/>' +
+        '<ellipse cx="70" cy="118" rx="28" ry="20" fill="#FDF0DC"/>' +
+        '<ellipse cx="55" cy="136" rx="10" ry="6" fill="#E8B98F"/>' +
+        '<ellipse cx="85" cy="136" rx="10" ry="6" fill="#E8B98F"/>',
+      palette: { cheek: '#F3A9A0', faceInk: '#4A3524' },
     },
   ];
 }
