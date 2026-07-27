@@ -26,6 +26,8 @@ nunchi analyzes the tone of your prompts via the `UserPromptSubmit` hook and exp
 | Rushed tone (`빨리!`, `asap`) | Wide-eyed panic |
 | Claude running tools | Focused work mode |
 | Waiting for permission | Bounces for attention |
+| A tool call fails | 😨 Flusters — "something went wrong" |
+| Long-running work (3 min+) | Sweats — "still going..." |
 | Task done (turn ends after tool work) | ✨ Cheers "다 됐어요!" for 12s |
 | Session end | Zzz |
 
@@ -63,6 +65,7 @@ pnpm hooks:uninstall
 - **Poke it**: click the pet — its body squishes, springs back like jelly, and its cheeks jiggle
 - Drag the pet to move it anywhere (it stays squished while held)
 - **Resize**: scroll over the pet — 60% to 200%, persists across restarts
+- **Pet it**: gently rub the cursor left and right over it (without pressing) for a flurry of hearts
 - Hover for a subtle cheek wiggle + the `×` button to quit
 - With the window focused, number keys 1–9 preview expressions (dev aid)
 
