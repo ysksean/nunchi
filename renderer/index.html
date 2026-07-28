@@ -111,6 +111,15 @@
   .eye { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
   @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
 
+  /* Resting: after a spell of no activity we stop every looping animation so a
+     transparent, always-on-top window stops repainting and the GPU can idle.
+     Removing the animation returns transforms to their base pose (pet at rest). */
+  body.resting #pet,
+  body.resting .eye { animation: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    #pet, .eye { animation: none !important; }
+  }
+
   #pet.anim-idle    { animation: breathe 3.2s ease-in-out infinite; }
   #pet.anim-bounce  { animation: bounce 0.55s ease-in-out infinite; }
   #pet.anim-shake   { animation: shake 0.35s linear infinite; }
@@ -300,6 +309,17 @@
   let state = { mood: 'neutral', moodAt: 0, claudeState: 'idle', claudeStateAt: 0 };
   let moodTimer = null;
 
+  // Idle power saver: freeze looping animations after a lull so the transparent
+  // overlay stops repainting. Any state change or interaction wakes it back up.
+  const REST_MS = 6000;
+  let restTimer = null;
+
+  function wake() {
+    document.body.classList.remove('resting');
+    clearTimeout(restTimer);
+    restTimer = setTimeout(() => document.body.classList.add('resting'), REST_MS);
+  }
+
   function setFace(name) {
     if (name === current) return;
     current = name;
@@ -309,6 +329,7 @@
     petEl.setAttribute('class', f.anim); // SVG className is read-only — plain assignment is silently ignored
     bubbleEl.textContent = f.bubble;
     bubbleEl.classList.toggle('show', !!f.bubble);
+    wake(); // a new expression is activity — animate, then settle back to rest
   }
 
   let interactionUntil = 0; // a poke/pet temporarily owns the face
@@ -373,6 +394,11 @@
   function applyScale() {
     stageEl.style.zoom = scale;
     if (api && api.resize) api.resize(Math.round(BASE_W * scale), Math.round(BASE_H * scale));
+  }
+
+  // Any interaction wakes the pet from its resting (animation-paused) state.
+  for (const ev of ['pointerover', 'pointerdown', 'pointermove', 'wheel']) {
+    stageEl.addEventListener(ev, wake, { passive: true });
   }
 
   stageEl.addEventListener('wheel', (e) => {
