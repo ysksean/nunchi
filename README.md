@@ -46,6 +46,20 @@ The Claude Code CLI and desktop app share hooks in `~/.claude/settings.json`, so
 
 ## Install
 
+### Download (recommended)
+
+Grab `nunchi-<version>-arm64.dmg` from the [latest release](https://github.com/ysksean/nunchi/releases/latest), open it, and drag nunchi to Applications.
+
+The app is not code-signed yet, so on first launch macOS Gatekeeper will block it. Either **right-click the app → Open → Open**, or run once:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/nunchi.app
+```
+
+Then click the menu-bar ghost → **Claude Code 훅 설치** and you're done.
+
+### From source
+
 ```bash
 git clone https://github.com/ysksean/nunchi.git
 cd nunchi
@@ -54,7 +68,9 @@ pnpm hooks:install   # registers hooks in ~/.claude/settings.json (auto-backup)
 pnpm start           # launch the pet
 ```
 
-Uninstall:
+Build your own DMG with `pnpm dist` (output in `dist/`).
+
+Uninstall the hooks:
 
 ```bash
 pnpm hooks:uninstall

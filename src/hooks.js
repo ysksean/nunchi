@@ -34,6 +34,29 @@ function defaultHookScript() {
   return path.join(__dirname, '..', 'bin', 'hook.js');
 }
 
+function defaultRuntimeDir() {
+  return path.join(os.homedir(), '.nunchi', 'runtime');
+}
+
+// The files the hook needs to run standalone, with their layout preserved so
+// bin/hook.js's `../src/...` requires still resolve.
+const RUNTIME_FILES = ['bin/hook.js', 'src/mood.js', 'src/state.js'];
+
+/**
+ * Copies the hook runtime out of the app bundle to a stable location so the
+ * registered hook command keeps working after the app moves or updates (a
+ * packaged .app keeps these inside app.asar, which `node` can't execute).
+ * Returns the path to the runnable hook script.
+ */
+function syncRuntime({ sourceRoot, runtimeDir = defaultRuntimeDir() } = {}) {
+  for (const rel of RUNTIME_FILES) {
+    const dest = path.join(runtimeDir, rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(path.join(sourceRoot, rel), dest);
+  }
+  return path.join(runtimeDir, 'bin', 'hook.js');
+}
+
 const isOurs = (h) =>
   typeof h.command === 'string' &&
   (h.command.includes(NUNCHI_MARK) || h.command.includes('claude-pet/bin/hook.js'));
@@ -96,8 +119,10 @@ module.exports = {
   installHooks,
   uninstallHooks,
   hooksInstalled,
+  syncRuntime,
   defaultSettingsPath,
   defaultHookScript,
+  defaultRuntimeDir,
   NUNCHI_MARK,
   EVENTS,
 };

@@ -45,6 +45,20 @@ Claude Code CLI와 데스크톱 앱은 `~/.claude/settings.json`의 hooks를 공
 
 ## 설치
 
+### 다운로드 (추천)
+
+[최신 릴리스](https://github.com/ysksean/nunchi/releases/latest)에서 `nunchi-<버전>-arm64.dmg`를 받아 열고, nunchi를 응용 프로그램 폴더로 드래그하세요.
+
+아직 코드 서명 전이라 첫 실행 시 macOS Gatekeeper가 막습니다. **앱을 우클릭 → 열기 → 열기**를 누르거나, 한 번만 아래를 실행하세요:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/nunchi.app
+```
+
+그다음 메뉴바 유령 아이콘 → **Claude Code 훅 설치**를 누르면 끝입니다.
+
+### 소스에서 실행
+
 ```bash
 git clone https://github.com/ysksean/nunchi.git
 cd nunchi
@@ -53,7 +67,9 @@ pnpm hooks:install   # ~/.claude/settings.json에 훅 등록 (백업 자동 생�
 pnpm start           # 펫 실행
 ```
 
-제거:
+직접 DMG를 만들려면 `pnpm dist` (결과는 `dist/`에).
+
+훅 제거:
 
 ```bash
 pnpm hooks:uninstall

@@ -46,6 +46,20 @@ Claude Code CLI 与桌面应用共享 `~/.claude/settings.json` 中的 hooks，�
 
 ## 安装
 
+### 下载（推荐）
+
+从[最新发布](https://github.com/ysksean/nunchi/releases/latest)下载 `nunchi-<版本>-arm64.dmg`，打开后把 nunchi 拖到"应用程序"文件夹。
+
+应用尚未代码签名，首次启动时 macOS Gatekeeper 会拦截。**右键点击应用 → 打开 → 打开**，或执行一次：
+
+```bash
+xattr -dr com.apple.quarantine /Applications/nunchi.app
+```
+
+然后点击菜单栏幽灵图标 → **安装 Claude Code hooks** 即可。
+
+### 从源码运行
+
 ```bash
 git clone https://github.com/ysksean/nunchi.git
 cd nunchi
@@ -54,7 +68,9 @@ pnpm hooks:install   # 在 ~/.claude/settings.json 注册钩子（自动备份�
 pnpm start           # 启动宠物
 ```
 
-卸载：
+自行构建 DMG：`pnpm dist`（输出在 `dist/`）。
+
+卸载钩子：
 
 ```bash
 pnpm hooks:uninstall

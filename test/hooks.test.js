@@ -5,7 +5,10 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { installHooks, uninstallHooks, hooksInstalled, NUNCHI_MARK, EVENTS } = require('../src/hooks');
+const cp = require('node:child_process');
+const { installHooks, uninstallHooks, hooksInstalled, syncRuntime, NUNCHI_MARK, EVENTS } = require('../src/hooks');
+
+const REPO_ROOT = path.join(__dirname, '..');
 
 function tmpSettings(initial) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nunchi-hooks-'));
@@ -79,6 +82,25 @@ test('hooksInstalled reflects state', () => {
   assert.equal(hooksInstalled({ settingsPath: file }), true);
   uninstallHooks({ settingsPath: file });
   assert.equal(hooksInstalled({ settingsPath: file }), false);
+});
+
+test('syncRuntime copies the hook runtime and it actually runs', () => {
+  const runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nunchi-rt-'));
+  const hookScript = syncRuntime({ sourceRoot: REPO_ROOT, runtimeDir });
+
+  assert.ok(fs.existsSync(hookScript));
+  assert.ok(fs.existsSync(path.join(runtimeDir, 'src', 'mood.js')));
+  assert.ok(fs.existsSync(path.join(runtimeDir, 'src', 'state.js')));
+
+  // The copied hook must run standalone (its ../src requires resolve).
+  const out = cp.execSync(`node "${hookScript}" ${NUNCHI_MARK}`, {
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', prompt: '좋아 고마워' }),
+    env: { ...process.env, HOME: runtimeDir },
+  });
+  assert.doesNotThrow(() => out); // no crash
+  const state = JSON.parse(fs.readFileSync(path.join(runtimeDir, '.nunchi', 'state.json'), 'utf8'));
+  assert.equal(state.mood, 'happy');
+  fs.rmSync(runtimeDir, { recursive: true, force: true });
 });
 
 test('installHooks backs up an existing settings file', () => {

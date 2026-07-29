@@ -2,6 +2,15 @@
 
 nunchi의 모든 주요 변경사항을 기록합니다. [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [0.6.0] - 2026-07-29
+
+### Added
+- macOS .dmg 배포: electron-builder로 서명 없는 .dmg 빌드 (`pnpm dist`). 크림 유령 앱 아이콘을
+  런타임 생성 (`pnpm make:icon`), 다운로드·Gatekeeper 우회 안내를 3개 국어 README에 추가
+- 패키징 대비 훅 런타임 안정화: `syncRuntime`이 hook.js·mood.js·state.js를 `~/.nunchi/runtime/`으로
+  복사해, 앱이 asar 안에 있거나 이동·업데이트돼도 등록된 훅이 계속 동작. 앱은 `app.isPackaged`일 때
+  이 경로로 훅을 등록
+
 ## [0.5.0] - 2026-07-29
 
 ### Added

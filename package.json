@@ -1,20 +1,49 @@
 {
   "name": "nunchi",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A desktop pet that reads the room — reacts to your tone in Claude Code",
   "main": "main.js",
+  "author": "ysksean",
   "private": true,
   "scripts": {
     "start": "electron .",
     "test": "node --test",
     "demo:record": "electron scripts/record-demo.js",
     "skin": "node scripts/skin.js",
+    "make:icon": "node scripts/make-icon.js",
+    "dist": "electron-builder --mac",
     "hooks:install": "node scripts/install-hooks.js",
     "hooks:uninstall": "node scripts/install-hooks.js --uninstall"
   },
   "license": "MIT",
   "devDependencies": {
     "electron": "^38.0.0",
+    "electron-builder": "^25.1.8",
     "gifenc": "^1.0.3"
+  },
+  "build": {
+    "appId": "com.ysksean.nunchi",
+    "productName": "nunchi",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "bin/**/*",
+      "src/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "dmg": {
+      "title": "nunchi ${version}"
+    }
   }
 }
