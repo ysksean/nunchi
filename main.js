@@ -1,15 +1,19 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, screen, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, Tray, nativeImage, screen, shell, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
 const { allSkins, SKINS_DIR } = require('./src/skin');
+const { installHooks, uninstallHooks, hooksInstalled } = require('./src/hooks');
+const { trayIconPng } = require('./src/tray-icon');
 
 const WIN_W = 180;
 const WIN_H = 210;
 
 let win = null;
+let tray = null;
+let currentSkinName = null;
 
 function createWindow() {
   const { workArea } = screen.getPrimaryDisplay();
@@ -51,21 +55,45 @@ function createWindow() {
   });
 }
 
-ipcMain.on('pet:quit', () => app.quit());
-ipcMain.on('pet:move', (_e, x, y) => {
-  if (win && !win.isDestroyed()) win.setPosition(x, y);
-});
-ipcMain.on('pet:menu', (_e, currentSkin) => {
-  if (!win || win.isDestroyed()) return;
+function showPet() {
+  if (win && !win.isDestroyed()) {
+    win.show();
+    win.setAlwaysOnTop(true, 'screen-saver');
+  }
+  refreshTray();
+}
+
+function hidePet() {
+  if (win && !win.isDestroyed()) win.hide();
+  refreshTray();
+}
+
+// Menu shared by the tray and the pet's right-click. `forTray` adds
+// app-level items (show/hide, login) that don't belong on the pet itself.
+function buildMenu({ forTray }) {
   const { skins } = allSkins();
-  const template = skins.map((skin) => ({
-    label: skin.name + (skin.author && skin.author !== 'nunchi' ? ` — ${skin.author}` : ''),
-    type: 'radio',
-    checked: skin.name === currentSkin,
-    click: () => win.webContents.send('pet:skin', skin.name),
-  }));
+  const template = [];
+
+  if (forTray) {
+    const visible = win && !win.isDestroyed() && win.isVisible();
+    template.push(
+      { label: visible ? '펫 숨기기' : '펫 보이기', click: () => (visible ? hidePet() : showPet()) },
+      { type: 'separator' }
+    );
+  }
+
+  template.push({
+    label: '스킨',
+    submenu: skins.map((skin) => ({
+      label: skin.name + (skin.author && skin.author !== 'nunchi' ? ` — ${skin.author}` : ''),
+      type: 'radio',
+      checked: skin.name === currentSkinName,
+      click: () => {
+        if (win && !win.isDestroyed()) win.webContents.send('pet:skin', skin.name);
+      },
+    })),
+  });
   template.push(
-    { type: 'separator' },
     {
       label: '스킨 폴더 열기',
       click: () => {
@@ -73,11 +101,56 @@ ipcMain.on('pet:menu', (_e, currentSkin) => {
         shell.openPath(SKINS_DIR);
       },
     },
-    { label: '스킨 새로고침', click: () => win.reload() },
-    { type: 'separator' },
-    { label: '종료', click: () => app.quit() }
+    { label: '스킨 새로고침', click: () => win && !win.isDestroyed() && win.reload() },
+    { type: 'separator' }
   );
-  Menu.buildFromTemplate(template).popup({ window: win });
+
+  const installed = hooksInstalled();
+  template.push({
+    label: installed ? 'Claude Code 훅 제거' : 'Claude Code 훅 설치',
+    click: () => {
+      installed ? uninstallHooks() : installHooks();
+      refreshTray();
+    },
+  });
+
+  if (forTray) {
+    template.push({
+      label: '로그인 시 자동 실행',
+      type: 'checkbox',
+      checked: app.getLoginItemSettings().openAtLogin,
+      click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked }),
+    });
+    template.push({ type: 'separator' }, { label: 'nunchi 종료', click: () => app.quit() });
+  }
+
+  return Menu.buildFromTemplate(template);
+}
+
+function refreshTray() {
+  if (tray) tray.setContextMenu(buildMenu({ forTray: true }));
+}
+
+function createTray() {
+  const icon = nativeImage.createFromBuffer(trayIconPng(22));
+  icon.setTemplateImage(true); // macOS recolors for light/dark menu bar
+  tray = new Tray(icon);
+  tray.setToolTip('nunchi');
+  tray.on('click', () => tray.popUpContextMenu());
+  refreshTray();
+}
+
+ipcMain.on('pet:quit', () => app.quit());
+ipcMain.on('pet:hide', hidePet);
+ipcMain.on('pet:skin-active', (_e, name) => {
+  currentSkinName = name;
+  refreshTray();
+});
+ipcMain.on('pet:move', (_e, x, y) => {
+  if (win && !win.isDestroyed()) win.setPosition(x, y);
+});
+ipcMain.on('pet:menu', () => {
+  if (win && !win.isDestroyed()) buildMenu({ forTray: false }).popup({ window: win });
 });
 
 ipcMain.on('pet:resize', (_e, w, h) => {
@@ -90,6 +163,9 @@ ipcMain.on('pet:resize', (_e, w, h) => {
 app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock.hide();
   createWindow();
+  createTray();
 });
 
-app.on('window-all-closed', () => app.quit());
+// Menu-bar app: hiding the pet must not quit. The tray keeps nunchi alive;
+// quit only from the tray's "nunchi 종료".
+app.on('window-all-closed', () => {});

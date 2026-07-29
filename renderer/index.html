@@ -147,7 +147,7 @@
 <body>
 <div id="stage">
   <div id="bubble"></div>
-  <div id="quit" title="종료">×</div>
+  <div id="quit" title="숨기기 (메뉴바에서 다시 열 수 있어요)">×</div>
   <div id="petwrap">
     <svg id="pet" viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg">
       <g id="body"></g>
@@ -365,6 +365,7 @@
     FACES = buildFaces(skin.palette || DEFAULT_PALETTE);
     current = null; // force a re-render with the new palette
     resolve();
+    if (api && api.notifySkin) api.notifySkin(skinName); // keep the tray radio in sync
   }
 
   // In a plain browser <svg id="pet"> shadows window.pet (named element access),
@@ -377,10 +378,10 @@
       applySkin(skinName);
     });
     api.onSkin((name) => applySkin(name));
-    document.getElementById('quit').addEventListener('click', () => api.quit());
+    document.getElementById('quit').addEventListener('click', () => api.hide());
     document.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      api.menu(skinName);
+      api.menu();
     });
   }
 

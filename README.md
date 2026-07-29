@@ -60,6 +60,18 @@ Uninstall:
 pnpm hooks:uninstall
 ```
 
+## Menu-bar app
+
+nunchi lives in the **macOS menu bar** as a ghost icon. Click it to:
+
+- Show / hide the pet
+- Pick a skin · open the skins folder · reload
+- Install / remove the Claude Code hooks (no terminal needed)
+- Launch at login
+- Quit nunchi
+
+The pet's `×` button now **hides** it (not quit) — reopen it from the menu-bar icon.
+
 ## Usage
 
 - **Poke it**: click the pet — its body squishes, springs back like jelly, and its cheeks jiggle

@@ -9,5 +9,7 @@ contextBridge.exposeInMainWorld('pet', {
   resize: (w, h) => ipcRenderer.send('pet:resize', w, h),
   onSkins: (cb) => ipcRenderer.on('pet:skins', (_e, skins) => cb(skins)),
   onSkin: (cb) => ipcRenderer.on('pet:skin', (_e, name) => cb(name)),
-  menu: (currentSkin) => ipcRenderer.send('pet:menu', currentSkin),
+  menu: () => ipcRenderer.send('pet:menu'),
+  hide: () => ipcRenderer.send('pet:hide'),
+  notifySkin: (name) => ipcRenderer.send('pet:skin-active', name),
 });
