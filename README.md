@@ -21,6 +21,7 @@ nunchi analyzes the tone of your prompts via the `UserPromptSubmit` hook and exp
 | Trigger | Expression |
 |--------|------|
 | Irritated / angry tone (`왜 안 돼??`, `wtf`) | Trembles apologetically |
+| **Three angry prompts in a row** | Drops flat and grovels — "한 번만 봐주세요 🙇" |
 | Praise / joy (`완벽해 고마워!`, `thanks!`) | Bounces happily |
 | Tired tone (`하... 힘들다 ㅠㅠ`, `sigh`) | Droops with teary eyes |
 | Rushed tone (`빨리!`, `asap`) | Wide-eyed panic |
@@ -30,6 +31,9 @@ nunchi analyzes the tone of your prompts via the `UserPromptSubmit` hook and exp
 | Long-running work (3 min+) | Sweats — "still going..." |
 | Task done (turn ends after tool work) | ✨ Cheers "다 됐어요!" for 12s |
 | Session end | Zzz |
+
+**Nunchi gauge** — the pet remembers the day's tone (resets at local midnight; only mood tallies are stored, never text).
+On praise-heavy days it idles bouncy and bright; after a rough day it turns timid and reads the room.
 
 ## Architecture
 

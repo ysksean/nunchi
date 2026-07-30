@@ -40,7 +40,7 @@ function defaultRuntimeDir() {
 
 // The files the hook needs to run standalone, with their layout preserved so
 // bin/hook.js's `../src/...` requires still resolve.
-const RUNTIME_FILES = ['bin/hook.js', 'src/mood.js', 'src/state.js'];
+const RUNTIME_FILES = ['bin/hook.js', 'src/mood.js', 'src/state.js', 'src/gauge.js'];
 
 /**
  * Copies the hook runtime out of the app bundle to a stable location so the

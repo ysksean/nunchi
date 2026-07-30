@@ -128,6 +128,9 @@
   #pet.anim-sway    { animation: sway 1.6s ease-in-out infinite; }
   #pet.anim-sleep   { animation: breathe 5s ease-in-out infinite; }
   #pet.anim-tada    { animation: tada 0.85s ease-in-out infinite; }
+  #pet.anim-cower   { animation: cower 0.4s linear infinite; transform-origin: 50% 100%; }
+  #pet.anim-buoyant { animation: bounce 1.5s ease-in-out infinite; }
+  #pet.anim-timid   { animation: droop 4.5s ease-in-out infinite; }
 
   @keyframes breathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-4px) scaleY(0.985); } }
   @keyframes bounce  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
@@ -141,6 +144,10 @@
     40%      { transform: translateY(0) rotate(0deg); }
     60%      { transform: translateY(-14px) rotate(4deg); }
     80%      { transform: translateY(0) rotate(0deg); }
+  }
+  @keyframes cower {
+    0%, 100% { transform: scale(1.12, 0.55) translateX(-1.5px); }
+    50%      { transform: scale(1.12, 0.55) translateX(1.5px); }
   }
 </style>
 </head>
@@ -273,6 +280,30 @@
       extras: `<path d="M108 44 q-5 10 0 13 q5 -3 0 -13" fill="#9AD4EF"/>`,
       anim: 'anim-sway', bubble: '아직 하는 중이에요...',
     },
+    cowering: {
+      face: `<path d="M40 64 l10 5 -10 5" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="M100 64 l-10 5 10 5" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+             <path d="M60 92 Q65 88 70 92 Q75 88 80 92" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+      extras: `<path d="M20 36 q-5 9 0 12 q5 -3 0 -12" fill="#7EB8E8"/>
+               <path d="M120 36 q-5 9 0 12 q5 -3 0 -12" fill="#7EB8E8"/>
+               <path d="M112 20 l6 -6 M117 27 l8 -2" stroke="#E05B5B" stroke-width="2.5" stroke-linecap="round"/>`,
+      anim: 'anim-cower', bubble: '잘못했어요... 한 번만 봐주세요 🙇',
+    },
+    buoyant: {
+      face: `<path d="M42 68 Q48 62 54 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M86 68 Q92 62 98 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
+             <path d="M60 87 Q70 95 80 87" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+             ${CHEEKS(blush, 1)}`,
+      anim: 'anim-buoyant', bubble: '',
+    },
+    timid: {
+      face: `<circle cx="48" cy="70" r="4.5" fill="${ink}"/>
+             <circle cx="92" cy="70" r="4.5" fill="${ink}"/>
+             <path d="M44 62 Q49 65 54 64" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>
+             <path d="M96 62 Q91 65 86 64" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>
+             <ellipse cx="70" cy="90" rx="3.5" ry="4" fill="${ink}"/>`,
+      anim: 'anim-timid', bubble: '',
+    },
     sleeping: {
       face: `<path d="M42 68 Q48 72 54 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
              <path d="M86 68 Q92 72 98 68" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -334,12 +365,28 @@
 
   let interactionUntil = 0; // a poke/pet temporarily owns the face
 
+  // 눈치 게이지 readers — the hook accumulates state.gauge (mood tallies only);
+  // the renderer just interprets it. Thresholds mirror src/gauge.js.
+  function gaugeCower() {
+    const g = state.gauge;
+    return !!(g && g.streak && g.streak.mood === 'angry' && g.streak.n >= 3);
+  }
+  function gaugeVibe() {
+    const g = state.gauge;
+    if (!g || !g.counts) return 'neutral';
+    const net = (g.counts.happy || 0) - (g.counts.angry || 0) - (g.counts.sad || 0);
+    if (net >= 3) return 'good';
+    if (net <= -3) return 'rough';
+    return 'neutral';
+  }
+
   function resolve() {
     clearTimeout(moodTimer);
     if (Date.now() < interactionUntil) return; // let the interaction face stand
     const moodAge = Date.now() - state.moodAt;
     if (state.mood !== 'neutral' && moodAge < MOOD_TTL_MS) {
-      setFace(state.mood);
+      // Three angry prompts in a row → drop flat and grovel instead of flinching.
+      setFace(state.mood === 'angry' && gaugeCower() ? 'cowering' : state.mood);
       moodTimer = setTimeout(resolve, MOOD_TTL_MS - moodAge + 50);
       return;
     }
@@ -353,6 +400,12 @@
       const workAge = Date.now() - state.claudeStateAt;
       if (workAge >= SLOW_MS) cs = 'slow';
       else moodTimer = setTimeout(resolve, SLOW_MS - workAge + 50);
+    }
+    if (cs === 'neutral') {
+      // Idle baseline follows the day's vibe: praise-heavy → buoyant, rough → timid.
+      const v = gaugeVibe();
+      if (v === 'good') cs = 'buoyant';
+      else if (v === 'rough') cs = 'timid';
     }
     setFace(cs);
   }

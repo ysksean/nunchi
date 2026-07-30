@@ -13,6 +13,19 @@ test('UserPromptSubmit classifies mood and enters thinking', () => {
   assert.equal(s.claudeState, 'thinking');
 });
 
+test('UserPromptSubmit accumulates the daily gauge', () => {
+  let st = { ...prev };
+  st = { ...st, ...nextState({ hook_event_name: 'UserPromptSubmit', prompt: '짜증나' }, st, 100, '2026-07-29') };
+  st = { ...st, ...nextState({ hook_event_name: 'UserPromptSubmit', prompt: '아 진짜 왜 이래' }, st, 200, '2026-07-29') };
+  assert.equal(st.gauge.counts.angry, 2);
+  assert.equal(st.gauge.streak.n, 2);
+  // next day resets
+  st = { ...st, ...nextState({ hook_event_name: 'UserPromptSubmit', prompt: '고마워 완벽해' }, st, 300, '2026-07-30') };
+  assert.equal(st.gauge.day, '2026-07-30');
+  assert.equal(st.gauge.counts.happy, 1);
+  assert.equal(st.gauge.counts.angry, 0);
+});
+
 test('PreToolUse enters working', () => {
   const s = nextState({ hook_event_name: 'PreToolUse', tool_name: 'Bash' }, prev, 100);
   assert.equal(s.claudeState, 'working');

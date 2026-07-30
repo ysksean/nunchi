@@ -9,6 +9,7 @@
 
 const { classifyMood } = require('../src/mood');
 const { readState, writeState } = require('../src/state');
+const { updateGauge, dayKey } = require('../src/gauge');
 
 // A PostToolUse response signals failure in a few shapes across tools.
 function toolFailed(response) {
@@ -21,10 +22,18 @@ function toolFailed(response) {
  * or null when the event should not change anything. Kept side-effect free so
  * it can be unit tested without stdin or the filesystem.
  */
-function nextState(event, prev, now) {
+function nextState(event, prev, now, day = dayKey(new Date(now))) {
   switch (event.hook_event_name) {
-    case 'UserPromptSubmit':
-      return { mood: classifyMood(event.prompt), moodAt: now, claudeState: 'thinking', claudeStateAt: now };
+    case 'UserPromptSubmit': {
+      const mood = classifyMood(event.prompt);
+      return {
+        mood,
+        moodAt: now,
+        claudeState: 'thinking',
+        claudeStateAt: now,
+        gauge: updateGauge(prev.gauge, mood, day),
+      };
+    }
     case 'PreToolUse':
       return { claudeState: 'working', claudeStateAt: now };
     case 'PostToolUse':
