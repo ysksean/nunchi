@@ -44,6 +44,14 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 Claude Code CLI와 데스크톱 앱은 `~/.claude/settings.json`의 hooks를 공유하므로 둘 다 동작합니다.
 
+**Codex도 지원합니다.** Codex는 `~/.codex/hooks.json`에 같은 형식의 훅을 쓰기 때문에, 같은 펫이 두 에이전트에 모두 반응합니다.
+설치 시 기기에 있는 에이전트를 자동 감지하며, 다른 도구가 등록해 둔 훅은 건드리지 않습니다.
+
+| | Claude Code | Codex |
+|---|---|---|
+| 설정 파일 | `~/.claude/settings.json` | `~/.codex/hooks.json` |
+| 권한 대기 이벤트 | `Notification` | `PermissionRequest` |
+
 > **참고**: 눈치는 Claude Code **세션**(CLI, 데스크톱 앱의 Code 세션)에서만 반응합니다.
 > 데스크톱 앱의 Chat 탭은 로컬 훅을 실행하지 않아 지원되지 않습니다.
 

@@ -2,6 +2,20 @@
 
 nunchi의 모든 주요 변경사항을 기록합니다. [SemVer](https://semver.org/lang/ko/)를 따릅니다.
 
+## [0.8.0] - 2026-08-05
+
+### Added
+- **Codex 지원**: 이제 Claude Code뿐 아니라 Codex(`~/.codex/hooks.json`)에도 반응합니다.
+  두 에이전트가 같은 훅 형식·페이로드를 쓰기 때문에 하나의 펫이 양쪽 모두에 반응
+- 설치 시 기기에 있는 에이전트를 자동 감지 (`pnpm hooks:install`), 특정 에이전트만 지정도 가능
+  (`--claude` / `--codex`). 메뉴바에 에이전트별 설치/제거 항목 표시
+- Codex 전용 이벤트 매핑: `PermissionRequest` → 권한 대기 표정 (Claude의 `Notification`과 동일),
+  `SubagentStart` → 작업중 유지
+
+### Changed
+- 훅 설치 모듈이 다중 에이전트(target)를 지원하도록 일반화. 제거 시 두 에이전트의 이벤트 이름을
+  모두 훑어 잔여 항목이 남지 않도록 함. 다른 도구가 등록한 훅은 계속 보존
+
 ## [0.7.0] - 2026-07-30
 
 ### Added

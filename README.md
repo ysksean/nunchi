@@ -45,6 +45,14 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 The Claude Code CLI and desktop app share hooks in `~/.claude/settings.json`, so both work.
 
+**Codex is supported too.** It uses the same hook format in `~/.codex/hooks.json`, so one pet reacts to both agents.
+Installing auto-detects whichever agents are on your machine and never touches hooks registered by other tools.
+
+| | Claude Code | Codex |
+|---|---|---|
+| Config file | `~/.claude/settings.json` | `~/.codex/hooks.json` |
+| Approval event | `Notification` | `PermissionRequest` |
+
 > **Note**: nunchi only reacts in Claude Code **sessions** (CLI, and Code sessions in the desktop app).
 > The desktop app's Chat tab doesn't run local hooks, so it isn't supported.
 

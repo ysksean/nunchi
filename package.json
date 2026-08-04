@@ -1,7 +1,7 @@
 {
   "name": "nunchi",
-  "version": "0.7.0",
-  "description": "A desktop pet that reads the room — reacts to your tone in Claude Code",
+  "version": "0.8.0",
+  "description": "A desktop pet that reads the room — reacts to your tone in Claude Code and Codex",
   "main": "main.js",
   "author": "ysksean",
   "private": true,

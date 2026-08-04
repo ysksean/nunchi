@@ -45,6 +45,14 @@ Claude Code hooks ─→ bin/hook.js ─→ ~/.nunchi/state.json ─→ Electron
 
 Claude Code CLI 与桌面应用共享 `~/.claude/settings.json` 中的 hooks，两者都能工作。
 
+**同时支持 Codex。** Codex 在 `~/.codex/hooks.json` 使用相同格式的 hooks，因此同一只宠物会对两个 agent 都有反应。
+安装时会自动检测机器上已有的 agent，且不会动其他工具注册的 hooks。
+
+| | Claude Code | Codex |
+|---|---|---|
+| 配置文件 | `~/.claude/settings.json` | `~/.codex/hooks.json` |
+| 等待授权事件 | `Notification` | `PermissionRequest` |
+
 > **注意**：nunchi 只在 Claude Code **会话**（CLI、桌面应用的 Code 会话）中有反应。
 > 桌面应用的 Chat 标签页不会运行本地 hooks，因此不受支持。
 

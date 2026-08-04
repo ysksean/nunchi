@@ -38,8 +38,12 @@ function nextState(event, prev, now, day = dayKey(new Date(now))) {
       return { claudeState: 'working', claudeStateAt: now };
     case 'PostToolUse':
       return { claudeState: toolFailed(event.tool_response) ? 'error' : 'working', claudeStateAt: now };
+    // Claude Code calls it Notification; Codex calls it PermissionRequest.
     case 'Notification':
+    case 'PermissionRequest':
       return { claudeState: 'waiting', claudeStateAt: now };
+    case 'SubagentStart':
+      return { claudeState: 'working', claudeStateAt: now };
     case 'Stop': {
       // Keep a fresh error on screen; celebrate only when tools were running;
       // a plain chat reply ends quietly so the pet isn't bouncing all day.

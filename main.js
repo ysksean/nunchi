@@ -5,16 +5,21 @@ const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
 const { allSkins, SKINS_DIR } = require('./src/skin');
-const { installHooks, uninstallHooks, hooksInstalled, syncRuntime } = require('./src/hooks');
+const {
+  installHooks,
+  uninstallHooks,
+  hooksInstalled,
+  syncRuntime,
+  detectTargets,
+  TARGETS,
+} = require('./src/hooks');
 const { trayIconPng } = require('./src/tray-icon');
 
 // Packaged: run the hook from a stable copy outside the (unexecutable) asar,
 // so registered hooks survive the app moving or updating. Dev: use the repo.
-function installHooksForApp() {
-  const hookScript = app.isPackaged
-    ? syncRuntime({ sourceRoot: app.getAppPath() })
-    : undefined; // defaults to repo bin/hook.js
-  installHooks(hookScript ? { hookScript } : {});
+function installHooksForApp(target) {
+  const hookScript = app.isPackaged ? syncRuntime({ sourceRoot: app.getAppPath() }) : undefined;
+  installHooks({ target, ...(hookScript ? { hookScript } : {}) });
 }
 
 const WIN_W = 180;
@@ -114,14 +119,19 @@ function buildMenu({ forTray }) {
     { type: 'separator' }
   );
 
-  const installed = hooksInstalled();
-  template.push({
-    label: installed ? 'Claude Code 훅 제거' : 'Claude Code 훅 설치',
-    click: () => {
-      installed ? uninstallHooks() : installHooksForApp();
-      refreshTray();
-    },
-  });
+  // One entry per agent found on this machine (Claude Code, Codex, …).
+  const found = detectTargets();
+  for (const target of found.length ? found : ['claude']) {
+    const { label } = TARGETS[target];
+    const on = hooksInstalled({ target });
+    template.push({
+      label: `${label} 훅 ${on ? '제거' : '설치'}`,
+      click: () => {
+        on ? uninstallHooks({ target }) : installHooksForApp(target);
+        refreshTray();
+      },
+    });
+  }
 
   if (forTray) {
     template.push({

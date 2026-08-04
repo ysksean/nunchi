@@ -63,6 +63,18 @@ test('Stop right after an error keeps the error visible', () => {
   assert.equal(s.claudeState, 'error');
 });
 
+test('Codex PermissionRequest waits, like Claude Notification', () => {
+  const claude = nextState({ hook_event_name: 'Notification' }, prev, 100);
+  const codex = nextState({ hook_event_name: 'PermissionRequest' }, prev, 100);
+  assert.equal(claude.claudeState, 'waiting');
+  assert.equal(codex.claudeState, 'waiting');
+});
+
+test('Codex SubagentStart keeps working rather than resetting', () => {
+  const s = nextState({ hook_event_name: 'SubagentStart' }, { ...prev, claudeState: 'working' }, 100);
+  assert.equal(s.claudeState, 'working');
+});
+
 test('unknown events do not change state', () => {
   const s = nextState({ hook_event_name: 'Whatever' }, prev, 100);
   assert.equal(s, null);

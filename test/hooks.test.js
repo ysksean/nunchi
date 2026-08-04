@@ -6,7 +6,15 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const cp = require('node:child_process');
-const { installHooks, uninstallHooks, hooksInstalled, syncRuntime, NUNCHI_MARK, EVENTS } = require('../src/hooks');
+const {
+  installHooks,
+  uninstallHooks,
+  hooksInstalled,
+  syncRuntime,
+  TARGETS,
+  NUNCHI_MARK,
+  EVENTS,
+} = require('../src/hooks');
 
 const REPO_ROOT = path.join(__dirname, '..');
 
@@ -82,6 +90,65 @@ test('hooksInstalled reflects state', () => {
   assert.equal(hooksInstalled({ settingsPath: file }), true);
   uninstallHooks({ settingsPath: file });
   assert.equal(hooksInstalled({ settingsPath: file }), false);
+});
+
+test('codex target registers its own event names', () => {
+  const { file } = tmpSettings();
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js', target: 'codex' });
+
+  const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const events = Object.keys(s.hooks);
+  assert.ok(events.includes('PermissionRequest'), 'codex uses PermissionRequest');
+  assert.ok(!events.includes('Notification'), 'codex has no Notification event');
+  assert.match(s.hooks.UserPromptSubmit[0].hooks[0].command, new RegExp(NUNCHI_MARK));
+});
+
+test('claude target keeps Notification and omits codex-only events', () => {
+  const { file } = tmpSettings();
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js', target: 'claude' });
+
+  const events = Object.keys(JSON.parse(fs.readFileSync(file, 'utf8')).hooks);
+  assert.ok(events.includes('Notification'));
+  assert.ok(!events.includes('PermissionRequest'));
+});
+
+test('installing into codex preserves other tools hooks', () => {
+  const { file } = tmpSettings({
+    hooks: {
+      PreToolUse: [
+        { matcher: 'Write|Edit', hooks: [{ type: 'command', command: 'python security_check.py', timeout: 3000 }] },
+      ],
+      UserPromptSubmit: [{ hooks: [{ type: 'command', command: 'sh other-tool.sh', timeout: 10 }] }],
+    },
+  });
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js', target: 'codex' });
+
+  const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const pre = s.hooks.PreToolUse.flatMap((m) => m.hooks.map((h) => h.command));
+  assert.ok(pre.some((c) => c.includes('security_check.py')), 'kept security hook');
+  // matcher-scoped entries keep their matcher
+  assert.equal(s.hooks.PreToolUse[0].matcher, 'Write|Edit');
+  const ups = s.hooks.UserPromptSubmit.flatMap((m) => m.hooks.map((h) => h.command));
+  assert.ok(ups.some((c) => c.includes('other-tool.sh')), 'kept other tool');
+  assert.ok(ups.some((c) => c.includes(NUNCHI_MARK)), 'added ours');
+});
+
+test('uninstalling codex leaves other tools intact', () => {
+  const { file } = tmpSettings({
+    hooks: { Stop: [{ hooks: [{ type: 'command', command: 'sh other-tool.sh' }] }] },
+  });
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js', target: 'codex' });
+  uninstallHooks({ settingsPath: file, target: 'codex' });
+
+  const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const cmds = (s.hooks.Stop || []).flatMap((m) => m.hooks.map((h) => h.command));
+  assert.deepEqual(cmds, ['sh other-tool.sh']);
+});
+
+test('TARGETS exposes both agents with distinct paths', () => {
+  assert.ok(TARGETS.claude.settingsPath.includes('.claude'));
+  assert.ok(TARGETS.codex.settingsPath.includes('.codex'));
+  assert.ok(TARGETS.codex.events.includes('PermissionRequest'));
 });
 
 test('syncRuntime copies the hook runtime and it actually runs', () => {

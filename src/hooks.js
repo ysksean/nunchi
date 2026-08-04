@@ -1,11 +1,15 @@
 'use strict';
 
 /**
- * Register / remove nunchi hooks in Claude Code's settings.json.
+ * Register / remove nunchi hooks for the supported coding agents.
  *
- * Shared by the CLI (scripts/install-hooks.js) and the menu-bar app so both
- * touch settings the same way. Only entries carrying NUNCHI_MARK (or the legacy
- * claude-pet path) are ever added or removed — unrelated hooks are preserved.
+ * Claude Code (~/.claude/settings.json) and Codex (~/.codex/hooks.json) use the
+ * same `hooks.<Event>[].hooks[]` shape and the same stdin payload fields, so one
+ * implementation serves both — only the file path and event names differ.
+ *
+ * Shared by the CLI (scripts/install-hooks.js) and the menu-bar app. Only
+ * entries carrying NUNCHI_MARK (or the legacy claude-pet path) are ever added or
+ * removed — hooks belonging to other tools are preserved.
  */
 
 const fs = require('fs');
@@ -26,8 +30,39 @@ const EVENTS = [
   'SessionEnd',
 ];
 
-function defaultSettingsPath() {
-  return path.join(os.homedir(), '.claude', 'settings.json');
+const TARGETS = {
+  claude: {
+    label: 'Claude Code',
+    settingsPath: path.join(os.homedir(), '.claude', 'settings.json'),
+    events: EVENTS,
+  },
+  codex: {
+    label: 'Codex',
+    settingsPath: path.join(os.homedir(), '.codex', 'hooks.json'),
+    // Codex names the approval event PermissionRequest and has no Notification.
+    events: [
+      'UserPromptSubmit',
+      'PreToolUse',
+      'PostToolUse',
+      'PermissionRequest',
+      'Stop',
+      'SessionStart',
+      'SessionEnd',
+    ],
+  },
+};
+
+function targetConfig(target = 'claude') {
+  return TARGETS[target] || TARGETS.claude;
+}
+
+function defaultSettingsPath(target = 'claude') {
+  return targetConfig(target).settingsPath;
+}
+
+/** Agents whose config directory exists on this machine. */
+function detectTargets() {
+  return Object.keys(TARGETS).filter((t) => fs.existsSync(path.dirname(TARGETS[t].settingsPath)));
 }
 
 function defaultHookScript() {
@@ -83,19 +118,24 @@ function write(settingsPath, settings) {
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
 }
 
-/** True if our hook is registered for at least one event. */
-function hooksInstalled({ settingsPath = defaultSettingsPath() } = {}) {
-  const settings = readSettings(settingsPath);
-  const hooks = settings.hooks || {};
-  return EVENTS.some((e) => (hooks[e] || []).some((m) => (m.hooks || []).some(isOurs)));
+/** True if our hook is registered for at least one event of this agent. */
+function hooksInstalled({ target = 'claude', settingsPath = defaultSettingsPath(target) } = {}) {
+  const hooks = readSettings(settingsPath).hooks || {};
+  return targetConfig(target).events.some((e) =>
+    (hooks[e] || []).some((m) => (m.hooks || []).some(isOurs))
+  );
 }
 
-function installHooks({ settingsPath = defaultSettingsPath(), hookScript = defaultHookScript() } = {}) {
+function installHooks({
+  target = 'claude',
+  settingsPath = defaultSettingsPath(target),
+  hookScript = defaultHookScript(),
+} = {}) {
   const settings = readSettings(settingsPath);
   settings.hooks = settings.hooks || {};
   const command = `node "${hookScript}" ${NUNCHI_MARK}`;
 
-  for (const event of EVENTS) {
+  for (const event of targetConfig(target).events) {
     const matchers = stripOurs(settings.hooks[event] || []);
     matchers.push({ hooks: [{ type: 'command', command }] });
     settings.hooks[event] = matchers;
@@ -103,12 +143,15 @@ function installHooks({ settingsPath = defaultSettingsPath(), hookScript = defau
   write(settingsPath, settings);
 }
 
-function uninstallHooks({ settingsPath = defaultSettingsPath() } = {}) {
+function uninstallHooks({ target = 'claude', settingsPath = defaultSettingsPath(target) } = {}) {
   const settings = readSettings(settingsPath);
   settings.hooks = settings.hooks || {};
 
-  for (const event of EVENTS) {
-    const matchers = stripOurs(settings.hooks[event] || []);
+  // Sweep every known event name so a target switch can't strand our entries.
+  const allEvents = new Set(Object.values(TARGETS).flatMap((t) => t.events));
+  for (const event of allEvents) {
+    if (!settings.hooks[event]) continue;
+    const matchers = stripOurs(settings.hooks[event]);
     if (matchers.length) settings.hooks[event] = matchers;
     else delete settings.hooks[event];
   }
@@ -120,9 +163,11 @@ module.exports = {
   uninstallHooks,
   hooksInstalled,
   syncRuntime,
+  detectTargets,
   defaultSettingsPath,
   defaultHookScript,
   defaultRuntimeDir,
+  TARGETS,
   NUNCHI_MARK,
   EVENTS,
 };
