@@ -8,7 +8,7 @@
  */
 
 const { classifyMood } = require('../src/mood');
-const { readState, writeState } = require('../src/state');
+const { updateState } = require('../src/state');
 const { updateGauge, dayKey } = require('../src/gauge');
 
 // A PostToolUse response signals failure in a few shapes across tools.
@@ -69,8 +69,9 @@ function main(input) {
   } catch {
     process.exit(0);
   }
-  const patch = nextState(event, readState(), Date.now());
-  if (patch) writeState(patch);
+  // Compute inside the lock: Claude Code and Codex can fire hooks at the same
+  // moment, and the gauge builds on the previous state.
+  updateState((prev) => nextState(event, prev, Date.now()));
   process.exit(0);
 }
 
