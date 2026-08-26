@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, Tray, nativeImage, screen, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, Tray, Notification, nativeImage, screen, shell, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
@@ -14,6 +14,7 @@ const {
   TARGETS,
 } = require('./src/hooks');
 const { trayIconPng } = require('./src/tray-icon');
+const { waitingNotify } = require('./src/waiting');
 
 // Packaged: run the hook from a stable copy outside the (unexecutable) asar,
 // so registered hooks survive the app moving or updating. Dev: use the repo.
@@ -51,9 +52,20 @@ function createWindow() {
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
+  // watchFile (polling) survives the atomic rename the hook writer uses.
+  let waitTrack = { since: null, notified: false };
   const push = () => {
-    if (win && !win.isDestroyed()) win.webContents.send('pet:state', readState());
+    if (!win || win.isDestroyed()) return;
+    const state = readState();
+    win.webContents.send('pet:state', state);
+
+    // The pet bounces for attention, but only the notification reaches you
+    // when another window is focused — nudge once per waiting episode.
+    const r = waitingNotify(state.claudeState, waitTrack, Date.now());
+    waitTrack = r.track;
+    if (r.fire) notifyWaiting();
   };
+
   win.webContents.on('did-finish-load', () => {
     const { skins, errors } = allSkins();
     for (const e of errors) console.warn(`skipped skin ${e.file}: ${e.message}`);
@@ -61,12 +73,23 @@ function createWindow() {
     push();
   });
 
-  // watchFile (polling) survives the atomic rename the hook writer uses.
   fs.watchFile(STATE_FILE, { interval: 300 }, push);
   win.on('closed', () => {
     fs.unwatchFile(STATE_FILE);
     win = null;
   });
+}
+
+/** One native nudge when the agent has been stuck waiting for approval. */
+function notifyWaiting() {
+  if (!Notification.isSupported()) return;
+  const n = new Notification({
+    title: 'nunchi',
+    body: '권한 승인을 기다리고 있어요',
+    silent: false,
+  });
+  n.on('click', showPet); // bring the pet up so the bounce is visible too
+  n.show();
 }
 
 function showPet() {

@@ -27,6 +27,7 @@ nunchi analyzes the tone of your prompts via the `UserPromptSubmit` hook and exp
 | Rushed tone (`빨리!`, `asap`) | Wide-eyed panic |
 | Claude running tools | Focused work mode |
 | Waiting for permission | Bounces for attention |
+| Waiting for permission for 30s+ | One macOS notification nudge (click it to bring the pet up) |
 | A tool call fails | 😨 Flusters — "something went wrong" |
 | Long-running work (3 min+) | Sweats — "still going..." |
 | Task done (turn ends after tool work) | ✨ Cheers "다 됐어요!" for 12s |
