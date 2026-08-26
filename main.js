@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, Tray, nativeImage, screen, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, Tray, Notification, nativeImage, screen, shell, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
@@ -14,6 +14,7 @@ const {
   TARGETS,
 } = require('./src/hooks');
 const { trayIconPng } = require('./src/tray-icon');
+const { planWaitingNudge } = require('./src/waiting');
 
 // Packaged: run the hook from a stable copy outside the (unexecutable) asar,
 // so registered hooks survive the app moving or updating. Dev: use the repo.
@@ -52,8 +53,12 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
   const push = () => {
-    if (win && !win.isDestroyed()) win.webContents.send('pet:state', readState());
+    if (!win || win.isDestroyed()) return;
+    const state = readState();
+    win.webContents.send('pet:state', state);
+    scheduleWaitingNudge(state);
   };
+
   win.webContents.on('did-finish-load', () => {
     const { skins, errors } = allSkins();
     for (const e of errors) console.warn(`skipped skin ${e.file}: ${e.message}`);
@@ -65,8 +70,58 @@ function createWindow() {
   fs.watchFile(STATE_FILE, { interval: 300 }, push);
   win.on('closed', () => {
     fs.unwatchFile(STATE_FILE);
+    clearTimeout(waitTimer);
     win = null;
   });
+}
+
+// ── Permission-wait nudge ────────────────────────────────────────────────────
+// The pet bounces for attention, but only a notification reaches you when
+// another window is focused. The wait is time-driven while state writes are
+// event-driven (nothing touches state.json during a wait), so entering
+// 'waiting' arms a real timer; any state change re-plans or cancels it.
+// Known limit: state is one shared scalar, so a second agent's activity ends
+// the episode from the pet's point of view and cancels the nudge.
+let waitTimer = null;
+let notifiedEpisode = 0; // claudeStateAt of the last episode we nudged (or silenced)
+let waitNotification = null;
+
+function scheduleWaitingNudge(state) {
+  clearTimeout(waitTimer);
+  waitTimer = null;
+
+  const plan = planWaitingNudge(state, notifiedEpisode, Date.now());
+  if (plan.action === 'fire') {
+    notifiedEpisode = plan.episode;
+    notifyWaiting();
+  } else if (plan.action === 'stale') {
+    notifiedEpisode = plan.episode; // dead session's leftovers — stay quiet
+  } else if (plan.action === 'arm') {
+    // Re-read on wake: the wait may have ended (or restarted) while we slept.
+    waitTimer = setTimeout(() => scheduleWaitingNudge(readState()), plan.delay);
+  }
+}
+
+/** One native nudge per waiting episode. */
+function notifyWaiting() {
+  if (!Notification.isSupported()) return;
+  if (waitNotification) waitNotification.close();
+  // Keep a module-level reference: a GC'd Notification loses its click handler.
+  const n = new Notification({
+    title: 'nunchi',
+    // Claude Code fires the same hook event for permission prompts and
+    // "waiting for your input" idles, so the wording must cover both.
+    body: '확인을 기다리고 있어요 🙋',
+  });
+  n.on('click', () => {
+    showPet();
+    n.close();
+  });
+  n.on('close', () => {
+    if (waitNotification === n) waitNotification = null;
+  });
+  waitNotification = n;
+  n.show();
 }
 
 function showPet() {
