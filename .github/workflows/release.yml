@@ -1,0 +1,58 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build DMG
+        run: pnpm dist
+        env:
+          # Unsigned build; identity is null in package.json, this keeps CI quiet.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Read version
+        id: ver
+        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          notes=$(awk -v v="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## \\[" v "\\]" { on=1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md)
+          gh release create "$GITHUB_REF_NAME" \
+            --title "nunchi ${GITHUB_REF_NAME}" \
+            --notes "${notes:-See CHANGELOG.md for details.}" \
+            "dist/nunchi-${{ steps.ver.outputs.version }}-arm64.dmg" \
+          || gh release upload "$GITHUB_REF_NAME" --clobber \
+            "dist/nunchi-${{ steps.ver.outputs.version }}-arm64.dmg"
