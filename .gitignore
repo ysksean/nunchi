@@ -4,3 +4,5 @@ out/
 .DS_Store
 *.log
 assets/.demo-frames/
+.claude/.bc-*.json
+.claude/.bc-explain/
