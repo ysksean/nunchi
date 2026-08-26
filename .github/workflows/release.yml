@@ -31,7 +31,9 @@ jobs:
         run: pnpm test
 
       - name: Build DMG
-        run: pnpm dist
+        # --publish never: electron-builder would otherwise try its own GitHub
+        # publish when a tag is present; we upload via gh release instead.
+        run: npx electron-builder --mac --publish never
         env:
           # Unsigned build; identity is null in package.json, this keeps CI quiet.
           CSC_IDENTITY_AUTO_DISCOVERY: false
