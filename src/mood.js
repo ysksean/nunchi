@@ -36,12 +36,37 @@ const PATTERNS = {
 // Ties break in this order: strong negative signals win over positive ones.
 const PRIORITY = ['angry', 'urgent', 'sad', 'happy'];
 
+// Punctuation and kaomoji are modifiers only: they add weight once a real word
+// matched but can never classify on their own ("그냥 그래요!!" isn't anger).
+const MODIFIER_WEIGHT = 1;
+const MODIFIERS = [/!{2,}/, /ㅡㅡ/, /-_-/];
+// Emoji carry tone by themselves and may stand alone at half strength.
+const STANDALONE_WEIGHT = 0.5;
+const STANDALONE = [
+  /🔥/, /⏰/, /😡/, /🤬/, /💢/, /😢/, /😭/, /😔/, /👍/, /🎉/, /❤️/, /😊/, /🙏/,
+];
+
+function patternScore(patterns, text) {
+  let strong = 0;
+  let modifier = 0;
+  let standalone = 0;
+  for (const re of patterns) {
+    if (!re.test(text)) continue;
+    if (MODIFIERS.some((w) => w.source === re.source)) modifier += MODIFIER_WEIGHT;
+    else if (STANDALONE.some((w) => w.source === re.source)) standalone += STANDALONE_WEIGHT;
+    else strong += 1;
+  }
+  if (strong > 0) return strong + modifier + standalone;
+  if (standalone > 0) return Math.min(standalone, 1);
+  return 0;
+}
+
 function classifyMood(text) {
   if (!text || typeof text !== 'string') return 'neutral';
 
   const scores = {};
   for (const [mood, patterns] of Object.entries(PATTERNS)) {
-    scores[mood] = patterns.reduce((n, re) => n + (re.test(text) ? 1 : 0), 0);
+    scores[mood] = patternScore(patterns, text);
   }
 
   let best = 'neutral';

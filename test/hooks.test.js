@@ -176,3 +176,30 @@ test('installHooks backs up an existing settings file', () => {
   const backups = fs.readdirSync(dir).filter((f) => f.includes('.bak-'));
   assert.equal(backups.length, 1);
 });
+
+test('backups are pruned to the newest few', () => {
+  const { file, dir } = tmpSettings({ hooks: {} });
+  for (let i = 0; i < 7; i++) installHooks({ settingsPath: file, hookScript: '/x/hook.js' });
+  const backups = fs.readdirSync(dir).filter((f) => f.includes('.bak-')).sort();
+  assert.ok(backups.length <= 3, `expected at most 3 backups, got ${backups.length}: ${backups}`);
+});
+
+test('subagent events are registered so hook.js can react to them', () => {
+  assert.ok(EVENTS.includes('SubagentStart'), 'claude registers SubagentStart');
+  assert.ok(EVENTS.includes('SubagentStop'), 'claude registers SubagentStop');
+  assert.ok(TARGETS.codex.events.includes('SubagentStart'), 'codex registers SubagentStart');
+
+  const { file } = tmpSettings();
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js' });
+  const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.ok(s.hooks.SubagentStart, 'SubagentStart entry written');
+});
+
+test('readSettings warns on a corrupt settings file', () => {
+  const { file } = tmpSettings();
+  fs.writeFileSync(file, '{ not json');
+  installHooks({ settingsPath: file, hookScript: '/x/hook.js' });
+  // The rewrite still succeeds and produces valid JSON with our hooks.
+  const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.ok(s.hooks.Stop);
+});

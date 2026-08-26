@@ -37,3 +37,16 @@ test('urgent tone', () => {
 test('negative beats positive on ties', () => {
   assert.equal(classifyMood('좋긴 한데 왜 안 되는데 짜증나'), 'angry');
 });
+
+test('bare punctuation does not outvote a positive word', () => {
+  assert.equal(classifyMood('오 최고!!! 완벽해'), 'happy');
+  assert.equal(classifyMood('잘했어 👍👍'), 'happy');
+});
+
+test('punctuation still tips an already-angry prompt', () => {
+  assert.equal(classifyMood('테스트 좀 똑바로 돌려!!'), 'angry');
+});
+
+test('punctuation alone stays below a real signal', () => {
+  assert.equal(classifyMood('그냥 그래요!!'), 'neutral');
+});

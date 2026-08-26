@@ -26,6 +26,8 @@ const EVENTS = [
   'PostToolUse',
   'Notification',
   'Stop',
+  'SubagentStart',
+  'SubagentStop',
   'SessionStart',
   'SessionEnd',
 ];
@@ -46,6 +48,8 @@ const TARGETS = {
       'PostToolUse',
       'PermissionRequest',
       'Stop',
+      'SubagentStart',
+      'SubagentStop',
       'SessionStart',
       'SessionEnd',
     ],
@@ -99,7 +103,13 @@ const isOurs = (h) =>
 function readSettings(settingsPath) {
   try {
     return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-  } catch {
+  } catch (err) {
+    // Missing file is normal (first install); a corrupt file is not — say so
+    // before the rewrite drops whatever the user had configured.
+    if (err.code !== 'ENOENT') {
+      console.error(`nunchi: ${settingsPath} is not valid JSON (${err.message}); ` +
+        `installing from scratch. A backup of the unreadable file is kept.`);
+    }
     return {};
   }
 }
@@ -110,12 +120,32 @@ function stripOurs(matchers) {
     .filter((m) => m.hooks.length > 0);
 }
 
+// How many settings backups to keep before pruning the oldest.
+const BACKUP_KEEP = 3;
+
 function write(settingsPath, settings) {
   if (fs.existsSync(settingsPath)) {
     fs.copyFileSync(settingsPath, `${settingsPath}.bak-${Date.now()}`);
+    pruneBackups(settingsPath);
   }
   fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+}
+
+/** Keep only the newest BACKUP_KEEP `settings.json.bak-*` files. */
+function pruneBackups(settingsPath) {
+  const dir = path.dirname(settingsPath);
+  const backups = fs
+    .readdirSync(dir)
+    .filter((f) => f.startsWith(`${path.basename(settingsPath)}.bak-`))
+    .sort();
+  for (const stale of backups.slice(0, Math.max(0, backups.length - BACKUP_KEEP))) {
+    try {
+      fs.unlinkSync(path.join(dir, stale));
+    } catch {
+      /* best effort */
+    }
+  }
 }
 
 /** True if our hook is registered for at least one event of this agent. */
