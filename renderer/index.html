@@ -530,7 +530,7 @@
 
   // ── Pet: rub the cursor back and forth over the pet (no press) → hearts ──
   const PET_LINES = ['에헤헤', '기분 좋아요', '더 해줘요', '스르륵...'];
-  let lastX = null, lastDir = 0, reversals = 0, rubTimer = null, pettingUntil = 0;
+  let lastX = null, lastDir = 0, reversals = 0, rubTimer = null;
 
   function heart(clientX, clientY) {
     const h = document.createElement('div');
@@ -560,7 +560,7 @@
     if (reversals >= 2) {
       reversals = 0;
       heart(e.clientX, e.clientY);
-      pettingUntil = Date.now() + 1200;
+      FACES.petted.bubble = PET_LINES[Math.floor(Math.random() * PET_LINES.length)];
       showFor('petted', 1200);
     }
   });

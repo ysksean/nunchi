@@ -252,6 +252,30 @@ function loadSkinsFrom(dir) {
 }
 
 const SKINS_DIR = path.join(os.homedir(), '.nunchi', 'skins');
+
+// The selected skin lives in a file (not renderer localStorage) so the CLI,
+// the tray menu and the pet window all share one source of truth.
+const SKIN_PREF_FILE = path.join(os.homedir(), '.nunchi', 'skin.json');
+
+/** Selected skin name, or null when unset/corrupt/unsafe. */
+function readSkinPref(file = SKIN_PREF_FILE) {
+  try {
+    const name = JSON.parse(fs.readFileSync(file, 'utf8')).name;
+    return typeof name === 'string' && NAME_RE.test(name) ? name : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSkinPref(name, file = SKIN_PREF_FILE) {
+  if (typeof name !== 'string' || !NAME_RE.test(name)) {
+    throw new Error('skin name must be 1-31 chars of letters, digits or hyphens');
+  }
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify({ name }) + '\n');
+  fs.renameSync(tmp, file); // atomic-ish: the app watches this file
+}
 const REGISTRY_BASE = 'https://raw.githubusercontent.com/ysksean/nunchi-skins/main/skins';
 
 /**
@@ -283,6 +307,9 @@ function allSkins() {
 }
 
 module.exports = {
+  readSkinPref,
+  writeSkinPref,
+  SKIN_PREF_FILE,
   sanitizeSvg,
   validateSkin,
   builtinSkins,

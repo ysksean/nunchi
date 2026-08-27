@@ -114,7 +114,8 @@ pnpm hooks:uninstall
 캐릭터는 JSON 한 파일로 교체합니다. 기본 제공: **ghost · cat · slime · hamster**.
 
 ```bash
-pnpm skin list              # 설치된 스킨 목록
+pnpm skin list              # 설치된 스킨 목록 (*가 현재 선택)
+pnpm skin use <이름>         # 스킨 적용 — 실행 중인 펫에 바로 반영
 pnpm skin add <이름>         # 커뮤니티 레지스트리에서 설치
 pnpm skin remove <이름>      # 삭제
 ```

@@ -115,7 +115,8 @@ The pet's `×` button now **hides** it (not quit) — reopen it from the menu-ba
 The character is a single JSON file. Bundled: **ghost · cat · slime · hamster**.
 
 ```bash
-pnpm skin list              # installed skins
+pnpm skin list              # installed skins (* marks the active one)
+pnpm skin use <name>        # apply a skin — a running pet updates live
 pnpm skin add <name>        # install from the community registry
 pnpm skin remove <name>     # uninstall
 ```
