@@ -4,7 +4,7 @@ const { app, BrowserWindow, Menu, Tray, Notification, nativeImage, screen, shell
 const fs = require('fs');
 const path = require('path');
 const { STATE_FILE, readState } = require('./src/state');
-const { allSkins, SKINS_DIR } = require('./src/skin');
+const { allSkins, readSkinPref, writeSkinPref, SKIN_PREF_FILE, SKINS_DIR } = require('./src/skin');
 const {
   installHooks,
   uninstallHooks,
@@ -63,13 +63,26 @@ function createWindow() {
     const { skins, errors } = allSkins();
     for (const e of errors) console.warn(`skipped skin ${e.file}: ${e.message}`);
     win.webContents.send('pet:skins', skins);
+    // The pref file is the source of truth (CLI `pnpm skin use` writes it);
+    // it overrides whatever the renderer remembered in localStorage.
+    const pref = readSkinPref();
+    if (pref) win.webContents.send('pet:skin', pref);
     push();
   });
 
   // watchFile (polling) survives the atomic rename the hook writer uses.
   fs.watchFile(STATE_FILE, { interval: 300 }, push);
+  // `pnpm skin use` from a terminal reaches the running pet through this file.
+  // Guard against echo: our own sync writes land with name === currentSkinName.
+  fs.watchFile(SKIN_PREF_FILE, { interval: 300 }, () => {
+    const pref = readSkinPref();
+    if (pref && pref !== currentSkinName && win && !win.isDestroyed()) {
+      win.webContents.send('pet:skin', pref);
+    }
+  });
   win.on('closed', () => {
     fs.unwatchFile(STATE_FILE);
+    fs.unwatchFile(SKIN_PREF_FILE);
     clearTimeout(waitTimer);
     win = null;
   });
@@ -219,6 +232,13 @@ ipcMain.on('pet:hide', hidePet);
 ipcMain.on('pet:skin-active', (_e, name) => {
   currentSkinName = name;
   refreshTray();
+  // Keep the pref file in step with menu-driven changes; skip when it already
+  // matches so a file-driven change doesn't echo back into another write.
+  try {
+    if (readSkinPref() !== name) writeSkinPref(name);
+  } catch (err) {
+    console.warn(`skin pref not saved: ${err.message}`);
+  }
 });
 ipcMain.on('pet:move', (_e, x, y) => {
   if (win && !win.isDestroyed()) win.setPosition(x, y);

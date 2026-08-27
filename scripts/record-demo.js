@@ -29,12 +29,13 @@ const TIMELINE = `
       pet.dispatchEvent(new PointerEvent('pointerup', opts));
     };
     await sleep(1400);
-    setFace('angry');   await sleep(2400);
-    setFace('happy');   await sleep(2000);
+    setFace('angry');   await sleep(2200);
+    setFace('happy');   await sleep(1800);
     setFace('neutral'); await sleep(700);
     await poke();       await sleep(900);
     await poke();       await sleep(1500);
-    setFace('working'); await sleep(1800);
+    setFace('working'); await sleep(1600);
+    setFace('error');   await sleep(2200);
     setFace('done');    await sleep(2600);
     return 'end';
   })()
@@ -75,9 +76,10 @@ app.whenReady().then(async () => {
   win.webContents.setFrameRate(30);
 
   await win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
-  await win.webContents.insertCSS(
-    `html, body { background: #2E2A26 !important; } #stage { zoom: 2; }`
-  );
+  await win.webContents.insertCSS(`html, body { background: #2E2A26 !important; }`);
+  // applyScale() sets an inline zoom at boot, so a stylesheet rule would lose —
+  // set the demo zoom inline too, after the page's own scripts have run.
+  await win.webContents.executeJavaScript(`document.getElementById('stage').style.zoom = 2; true`);
 
   const frames = [];
   let fw = 0;

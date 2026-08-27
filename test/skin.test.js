@@ -11,6 +11,8 @@ const {
   builtinSkins,
   loadSkinsFrom,
   resolveSkinSource,
+  readSkinPref,
+  writeSkinPref,
 } = require('../src/skin');
 
 function tmpSkinDir(files) {
@@ -174,6 +176,29 @@ test('resolveSkinSource rejects insecure or unsafe sources', () => {
   assert.throws(() => resolveSkinSource('http://example.com/fox.json'), /https/i);
   assert.throws(() => resolveSkinSource('file:///etc/passwd'), /https/i);
   assert.throws(() => resolveSkinSource('../../etc/passwd'), /name/i);
+});
+
+test('skin preference round-trips through its file', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nunchi-pref-'));
+  const file = path.join(dir, 'skin.json');
+  writeSkinPref('hamster', file);
+  assert.equal(readSkinPref(file), 'hamster');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('skin preference reads defensively', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nunchi-pref-'));
+  const file = path.join(dir, 'skin.json');
+  assert.equal(readSkinPref(file), null); // missing file
+  fs.writeFileSync(file, '{ not json');
+  assert.equal(readSkinPref(file), null); // corrupt file
+  fs.writeFileSync(file, JSON.stringify({ name: '../../etc/passwd' }));
+  assert.equal(readSkinPref(file), null); // unsafe name
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('writeSkinPref rejects unsafe names', () => {
+  assert.throws(() => writeSkinPref('../evil', '/tmp/whatever.json'), /name/i);
 });
 
 test('loadSkinsFrom returns empty for a missing directory', () => {

@@ -5,6 +5,7 @@
  * Skin manager: list, add and remove nunchi skins.
  *
  *   pnpm skin list
+ *   pnpm skin use <name>
  *   pnpm skin add <name|https url>
  *   pnpm skin remove <name>
  *
@@ -20,6 +21,8 @@ const {
   loadSkinsFrom,
   resolveSkinSource,
   validateSkin,
+  readSkinPref,
+  writeSkinPref,
   SKINS_DIR,
   MAX_INPUT_BYTES,
 } = require('../src/skin');
@@ -28,13 +31,24 @@ const [command, arg] = process.argv.slice(2);
 
 function list() {
   const builtin = new Set(builtinSkins().map((s) => s.name));
+  const active = readSkinPref();
   const { skins, errors } = allSkins();
   for (const skin of skins) {
     const origin = builtin.has(skin.name) ? 'builtin' : `user${skin.author ? ` · ${skin.author}` : ''}`;
-    console.log(`  ${skin.name.padEnd(16)} ${origin}`);
+    const mark = skin.name === active ? '*' : ' ';
+    console.log(`${mark} ${skin.name.padEnd(16)} ${origin}`);
   }
   for (const e of errors) console.warn(`  ! ${path.basename(e.file)}: ${e.message}`);
   console.log(`\n설치 위치: ${SKINS_DIR}`);
+}
+
+function use(name) {
+  const { skins } = allSkins();
+  if (!skins.some((s) => s.name === name)) {
+    throw new Error(`없는 스킨입니다: ${name} — pnpm skin list로 확인하세요`);
+  }
+  writeSkinPref(name);
+  console.log(`적용: ${name} (실행 중인 펫에 바로 반영됩니다)`);
 }
 
 async function add(source) {
@@ -73,6 +87,9 @@ async function main() {
   switch (command) {
     case 'list':
       return list();
+    case 'use':
+      if (!arg) throw new Error('사용법: pnpm skin use <name>');
+      return use(arg);
     case 'add':
       if (!arg) throw new Error('사용법: pnpm skin add <name|https url>');
       return add(arg);
@@ -80,7 +97,7 @@ async function main() {
       if (!arg) throw new Error('사용법: pnpm skin remove <name>');
       return remove(arg);
     default:
-      console.log('사용법:\n  pnpm skin list\n  pnpm skin add <name|https url>\n  pnpm skin remove <name>');
+      console.log('사용법:\n  pnpm skin list\n  pnpm skin use <name>\n  pnpm skin add <name|https url>\n  pnpm skin remove <name>');
   }
 }
 

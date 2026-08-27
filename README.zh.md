@@ -115,7 +115,8 @@ pnpm hooks:uninstall
 角色就是一个 JSON 文件。内置：**ghost · cat · slime · hamster**。
 
 ```bash
-pnpm skin list              # 已安装的皮肤
+pnpm skin list              # 已安装的皮肤（* 为当前选中）
+pnpm skin use <名称>         # 应用皮肤——运行中的宠物会实时更新
 pnpm skin add <名称>         # 从社区registry安装
 pnpm skin remove <名称>      # 卸载
 ```
